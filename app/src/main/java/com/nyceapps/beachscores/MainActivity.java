@@ -4,7 +4,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.TextView;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.provider.FivbEventList;
@@ -14,23 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements EventListResponse {
-    private EventsListAdapter eventsListAdapter;
+    private EventListAdapter eventListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RecyclerView eventsListView = (RecyclerView) findViewById(R.id.events_list_view);
+        RecyclerView eventListView = (RecyclerView) findViewById(R.id.event_list_view);
 
-        eventsListView.setHasFixedSize(true);
+        eventListView.setHasFixedSize(true);
 
-        LinearLayoutManager eventsListLayoutManager = new LinearLayoutManager(this);
-        eventsListView.setLayoutManager(eventsListLayoutManager);
+        LinearLayoutManager eventListLayoutManager = new LinearLayoutManager(this);
+        eventListView.setLayoutManager(eventListLayoutManager);
 
         List<Event> dummyEventList = new ArrayList<>();
-        eventsListAdapter = new EventsListAdapter(dummyEventList);
-        eventsListView.setAdapter(eventsListAdapter);
+        eventListAdapter = new EventListAdapter(dummyEventList);
+        eventListView.setAdapter(eventListAdapter);
 
         FivbEventList fivb = new FivbEventList(this);
         fivb.execute();
@@ -38,6 +37,6 @@ public class MainActivity extends AppCompatActivity implements EventListResponse
 
     @Override
     public void processEventList(List<Event> pEventList) {
-        eventsListAdapter.updateList(pEventList);
+        eventListAdapter.updateList(pEventList);
     }
 }

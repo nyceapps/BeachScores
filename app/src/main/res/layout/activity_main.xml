@@ -9,7 +9,7 @@
     android:paddingTop="16dp">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/events_list_view"
+        android:id="@+id/event_list_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="vertical" />

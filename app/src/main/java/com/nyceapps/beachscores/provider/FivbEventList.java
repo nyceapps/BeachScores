@@ -43,7 +43,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         Collections.sort(eventList, new Comparator<Event>() {
             @Override
             public int compare(Event e0, Event e1) {
-                return e0.getStart().compareTo(e1.getStart());
+                return e0.getStartDate().compareTo(e1.getStartDate());
             }
         });
         return eventList;
@@ -76,7 +76,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                                 try {
                                     Date start = df.parse(attrValue);
-                                    event.setStart(start);
+                                    event.setStartDate(start);
                                 } catch (ParseException e) {
                                     e.printStackTrace();
                                 }
@@ -84,7 +84,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                                 try {
                                     Date end = df.parse(attrValue);
-                                    event.setEnd(end);
+                                    event.setEndDate(end);
                                 } catch (ParseException e) {
                                     e.printStackTrace();
                                 }
