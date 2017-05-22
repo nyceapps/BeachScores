@@ -33,7 +33,7 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
     public void onBindViewHolder(EventListAdapter.ViewHolder holder, int position) {
         Event event = eventList.get(position);
 
-        String eventName = event.getName();
+        String eventName = event.getTitle();
         holder.nameTextView.setText(eventName);
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -41,6 +41,9 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
         String endDateStr = df.format(event.getEndDate());
         String eventPeriod = startDateStr + " - " + endDateStr;
         holder.periodTextView.setText(eventPeriod);
+
+        String eventLocation = event.getName();
+        holder.locationTextView.setText(eventLocation);
     }
 
     public void updateList(List<Event> pEventList) {
@@ -53,11 +56,13 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView nameTextView;
         public TextView periodTextView;
+        public TextView locationTextView;
 
         public ViewHolder(View v) {
             super(v);
             nameTextView = (TextView) v.findViewById(R.id.event_name);
             periodTextView = (TextView) v.findViewById(R.id.event_period);
+            locationTextView = (TextView) v.findViewById(R.id.event_location);
             v.setOnClickListener(this);
         }
 

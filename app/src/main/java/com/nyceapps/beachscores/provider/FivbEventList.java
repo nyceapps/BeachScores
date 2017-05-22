@@ -1,6 +1,7 @@
 package com.nyceapps.beachscores.provider;
 
 import android.os.AsyncTask;
+import android.text.TextUtils;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.util.FivbXmlUtils;
@@ -157,7 +158,6 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     private void processAdditionalTournamentData(List<Event> pEventList, Set<String> pTourneyNos) {
         if (pTourneyNos.size() > 0) {
             StringBuilder tourneyReqs = new StringBuilder();
-            // <Request Type="GetBeachTournament" No="2" Fields="NoEvent Name Title Status Type"/>
             Map<String, String> reqVals = new HashMap<>();
             reqVals.put("Type", "GetBeachTournament");
             reqVals.put("Fields", "NoEvent Name Title Status Type");
@@ -167,7 +167,95 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
             }
             String reqBody = FivbXmlUtils.getRequestString(tourneyReqs.toString());
             String response = ServiceUtils.getResponseString(BASE_URL, "Request", reqBody);
+
+            Map<String, Event> tourneyData = new HashMap<>();
+            try {
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+
+                xpp.setInput(new StringReader(response));
+                int eventType = xpp.getEventType();
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if (eventType == XmlPullParser.START_TAG) {
+                        if ("BeachTournament".equals(xpp.getName())) {
+                            Event event = new Event();
+                            String eventNo = null;
+                            for (int i = 0; i < xpp.getAttributeCount(); i++) {
+                                String attrName = xpp.getAttributeName(i);
+                                String attrValue = xpp.getAttributeValue(i);
+                                if ("NoEvent".equals(attrName)) {
+                                    eventNo = attrValue;
+                                } else if ("Status".equals(attrName)) {
+                                    event.setStatus(attrValue);
+                                } else if ("Type".equals(attrName)) {
+                                    event.setType(attrValue);
+                                } else if ("Name".equals(attrName)) {
+                                    event.setName(attrValue);
+                                } else if ("Title".equals(attrName)) {
+                                    event.setTitle(attrValue);
+                                }
+                            }
+
+                            if (isEventQualified(event)) {
+                                if (tourneyData.get(eventNo) == null) {
+                                    processNameAndTitle(event);
+                                    tourneyData.put(eventNo, event);
+                                }
+                            }
+                        }
+                    }
+                    eventType = xpp.next();
+                }
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            for (int i = pEventList.size() - 1; i >= 0; i--) {
+                Event mainEvent = pEventList.get(i);
+                Event tourneyEvent = tourneyData.get(mainEvent.getNo());
+                if (tourneyEvent != null) {
+                    mainEvent.setName(tourneyEvent.getName());
+                    mainEvent.setTitle(tourneyEvent.getTitle());
+                    pEventList.set(i, mainEvent);
+                } else {
+                    pEventList.remove(i);
+                }
+            }
         }
+    }
+
+    private boolean isEventQualified(Event pEvent) {
+        String status = pEvent.getStatus();
+        if (!"1".equals(status) && !"6".equals(status) && !"7".equals(status) && !"8".equals(status) && !"8".equals(status)) {
+            return false;
+        }
+        String type = pEvent.getType();
+        if ("35".equals(type)) {
+            return false;
+        }
+        String name = pEvent.getName();
+        String title = pEvent.getTitle();
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(title)) {
+            return false;
+        }
+        name = name.toLowerCase();
+        title = title.toLowerCase();
+        if (name.contains("cancel") || title.contains("cancel")) {
+            return false;
+        }
+        return true;
+    }
+
+    private void processNameAndTitle(Event pEvent) {
+        String name = pEvent.getName();
+        name = name.replaceAll("(?i)women's", "").replaceAll("(?i)men's", "").replaceAll(" {2,}", " ");
+        pEvent.setName(name);
+        String title = pEvent.getTitle();
+        title = title.replaceAll("(?i)women's", "").replaceAll("(?i)men's", "").replaceAll(" {2,}", " ");
+        pEvent.setTitle(title);
     }
 
     @Override

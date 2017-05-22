@@ -13,6 +13,7 @@ public class Event {
     private String no;
     private String code;
     private String name;
+    private String title;
     private Date startDate;
     private Date endDate;
     private Map<String, String> tournaments;
@@ -55,6 +56,14 @@ public class Event {
 
     public void setName(String pName) {
         name = pName;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String pTitle) {
+        title = pTitle;
     }
 
     public Date getStartDate() {
