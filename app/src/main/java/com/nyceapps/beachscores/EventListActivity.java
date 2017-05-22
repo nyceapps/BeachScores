@@ -1,5 +1,6 @@
 package com.nyceapps.beachscores;
 
+import android.app.ProgressDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,8 +13,9 @@ import com.nyceapps.beachscores.provider.EventListResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements EventListResponse {
+public class EventListActivity extends AppCompatActivity implements EventListResponse {
     private EventListAdapter eventListAdapter;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,10 @@ public class MainActivity extends AppCompatActivity implements EventListResponse
         eventListAdapter = new EventListAdapter(dummyEventList);
         eventListView.setAdapter(eventListAdapter);
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("loading...");
+        progressDialog.show();
+
         FivbEventList fivb = new FivbEventList(this);
         fivb.execute();
     }
@@ -38,5 +44,6 @@ public class MainActivity extends AppCompatActivity implements EventListResponse
     @Override
     public void processEventList(List<Event> pEventList) {
         eventListAdapter.updateList(pEventList);
+        progressDialog.dismiss();
     }
 }
