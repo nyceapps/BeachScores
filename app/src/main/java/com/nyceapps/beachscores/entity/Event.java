@@ -8,12 +8,30 @@ import java.util.Map;
  */
 
 public class Event {
+    private String type;
+    private String status;
     private String no;
     private String code;
     private String name;
     private Date startDate;
     private Date endDate;
     private Map<String, String> tournaments;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String pType) {
+        type = pType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String pStatus) {
+        status = pStatus;
+    }
 
     public String getNo() {
         return no;

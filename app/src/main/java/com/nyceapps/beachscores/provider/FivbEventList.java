@@ -3,6 +3,7 @@ package com.nyceapps.beachscores.provider;
 import android.os.AsyncTask;
 
 import com.nyceapps.beachscores.entity.Event;
+import com.nyceapps.beachscores.util.FivbXmlUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -20,14 +21,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by lugosi on 21.05.17.
  */
 
 public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
+    private final static String BASE_URL = "http://www.fivb.org/Vis2009/XmlRequest.asmx";
+
     private EventListResponse delegate;
 
     public FivbEventList(EventListResponse pDelegate) {
@@ -36,8 +41,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     @Override
     protected List<Event> doInBackground(Void... params) {
-        String baseUrl = "http://www.fivb.org/Vis2009/XmlRequest.asmx";
-        String response = ServiceUtils.getResponseString(baseUrl, "Request", getBodyContent());
+        String response = ServiceUtils.getResponseString(BASE_URL, "Request", getBodyContent());
 
         List<Event> eventList = processXml(response);
         Collections.sort(eventList, new Comparator<Event>() {
@@ -51,6 +55,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     private List<Event> processXml(String pResponse) {
         List<Event> eventList = new ArrayList<>();
+        Set<String> tourneyNos = new HashSet<>();
 
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -67,7 +72,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                             String attrName = xpp.getAttributeName(i);
                             String attrValue = xpp.getAttributeValue(i);
                             if ("No".equals(attrName)) {
-                                event.setNo(attrValue);
+                                    event.setNo(attrValue);
                             } else if ("Code".equals(attrName)) {
                                 event.setCode(attrValue);
                             } else if ("Name".equals(attrName)) {
@@ -89,7 +94,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                     e.printStackTrace();
                                 }
                             } else if ("Content".equals(attrName)) {
-                                setTournamentData(event, attrValue);
+                                processTournamentData(event, attrValue, tourneyNos);
                             }
                         }
                         eventList.add(event);
@@ -103,10 +108,12 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
             e.printStackTrace();
         }
 
+        processAdditionalTournamentData(eventList, tourneyNos);
+
         return eventList;
     }
 
-    private void setTournamentData(Event pEvent, String pXml) {
+    private void processTournamentData(Event pEvent, String pXml, Set<String> pTourneyNos) {
         Map<String, String> tournaments = new HashMap<>();
 
         try {
@@ -128,6 +135,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 key = attrValue;
                             } else if ("No".equals(attrName)) {
                                 value = attrValue;
+                                pTourneyNos.add(attrValue);
                             }
                         }
                         if (key != null && value != null) {
@@ -146,15 +154,39 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         pEvent.setTournaments(tournaments);
     }
 
+    private void processAdditionalTournamentData(List<Event> pEventList, Set<String> pTourneyNos) {
+        if (pTourneyNos.size() > 0) {
+            StringBuilder tourneyReqs = new StringBuilder();
+            // <Request Type="GetBeachTournament" No="2" Fields="NoEvent Name Title Status Type"/>
+            Map<String, String> reqVals = new HashMap<>();
+            reqVals.put("Type", "GetBeachTournament");
+            reqVals.put("Fields", "NoEvent Name Title Status Type");
+            for (String tourneyNo : pTourneyNos) {
+                reqVals.put("No", tourneyNo);
+                tourneyReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, null));
+            }
+            String reqBody = FivbXmlUtils.getRequestString(tourneyReqs.toString());
+            String response = ServiceUtils.getResponseString(BASE_URL, "Request", reqBody);
+        }
+    }
+
     @Override
     protected void onPostExecute(List<Event> pEvents) {
         delegate.processEventList(pEvents);
     }
 
     private String getBodyContent() {
-        String content = "<Requests><Request Type=\"GetEventList\" Fields=\"Code Name StartDate EndDate Content\"><Filter IsVisManaged=\"true\" HasBeachTournament=\"true\" FirstDate=\"%d-01-01\" LastDate=\"%d-12-31\"/></Request></Requests>";
+        Map<String, String> reqVals = new HashMap<>();
+        reqVals.put("Type", "GetEventList");
+        reqVals.put("Fields", "Code Name StartDate EndDate Content");
+        Map<String, String> filtVals = new HashMap<>();
+        filtVals.put("IsVisManaged", "true");
+        filtVals.put("HasBeachTournament", "true");
         int year = Calendar.getInstance().get(Calendar.YEAR);
-        String requestBody = String.format(content, year, year);
+        filtVals.put("FirstDate", String.valueOf(year) + "-01-01");
+        filtVals.put("LastDate", String.valueOf(year) + "-12-31");
+
+        String requestBody = FivbXmlUtils.getRequestString(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
         return requestBody;
     }
 }
