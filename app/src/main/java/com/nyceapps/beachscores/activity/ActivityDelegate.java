@@ -1,4 +1,4 @@
-package com.nyceapps.beachscores;
+package com.nyceapps.beachscores.activity;
 
 import android.view.View;
 

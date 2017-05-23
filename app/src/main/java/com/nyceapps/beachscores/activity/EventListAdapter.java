@@ -1,4 +1,4 @@
-package com.nyceapps.beachscores;
+package com.nyceapps.beachscores.activity;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
 
 import java.text.DateFormat;
@@ -35,17 +36,25 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
     public void onBindViewHolder(EventListAdapter.ViewHolder holder, int position) {
         Event event = eventList.get(position);
 
-        String eventName = event.getTitle();
-        holder.nameTextView.setText(eventName);
+        String eventTitle = event.getTitle();
+        holder.titleView.setText(eventTitle);
 
+        StringBuilder eventInfo = new StringBuilder();
+        eventInfo.append(event.getName()).append(", ");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String startDateStr = df.format(event.getStartDate());
         String endDateStr = df.format(event.getEndDate());
-        String eventPeriod = startDateStr + " - " + endDateStr;
-        holder.periodTextView.setText(eventPeriod);
-
-        String eventLocation = event.getName();
-        holder.locationTextView.setText(eventLocation);
+        eventInfo.append(startDateStr + " - " + endDateStr).append(", ");
+        if (event.hasWomenTournament()) {
+            eventInfo.append("W");
+            if (event.hasMenTournament()) {
+                eventInfo.append("/");
+            }
+        }
+        if (event.hasMenTournament()) {
+            eventInfo.append("M");
+        }
+        holder.infoView.setText(eventInfo.toString());
 
         holder.itemView.setTag(event);
     }
@@ -58,15 +67,14 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public TextView nameTextView;
-        public TextView periodTextView;
+        public TextView titleView;
+        public TextView infoView;
         public TextView locationTextView;
 
         public ViewHolder(View v) {
             super(v);
-            nameTextView = (TextView) v.findViewById(R.id.event_name);
-            periodTextView = (TextView) v.findViewById(R.id.event_period);
-            locationTextView = (TextView) v.findViewById(R.id.event_location);
+            titleView = (TextView) v.findViewById(R.id.event_title);
+            infoView = (TextView) v.findViewById(R.id.event_info);
             v.setOnClickListener(this);
         }
 

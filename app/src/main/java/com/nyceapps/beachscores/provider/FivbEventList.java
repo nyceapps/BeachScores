@@ -71,7 +71,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                             String attrName = xpp.getAttributeName(i);
                             String attrValue = xpp.getAttributeValue(i);
                             if ("No".equals(attrName)) {
-                                if (TextUtils.isDigitsOnly(attrValue)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                     long no = Long.parseLong(attrValue);
                                     event.setNo(no);
                                 }
@@ -139,7 +139,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                             }
                         }
                         if (key != null && value != null) {
-                            if (TextUtils.isDigitsOnly(value)) {
+                            if (!TextUtils.isEmpty(value) && TextUtils.isDigitsOnly(value)) {
                                 long genderNo = Long.parseLong(value);
                                 if ("W".equalsIgnoreCase(key)) {
                                     pEvent.setWomenTournamentNo(genderNo);
@@ -189,16 +189,16 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 String attrName = xpp.getAttributeName(i);
                                 String attrValue = xpp.getAttributeValue(i);
                                 if ("NoEvent".equals(attrName)) {
-                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                         eventNo = Long.parseLong(attrValue);
                                     }
                                 } else if ("Type".equals(attrName)) {
-                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                         int type = Integer.parseInt(attrValue);
                                         event.setType(type);
                                     }
                                 } else if ("Status".equals(attrName)) {
-                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                         int status = Integer.parseInt(attrValue);
                                         event.setStatus(status);
                                     }
@@ -280,7 +280,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     private String getBodyContent() {
         Map<String, String> reqVals = new HashMap<>();
         reqVals.put("Type", "GetEventList");
-        reqVals.put("Fields", "Code Name StartDate EndDate Content");
+        reqVals.put("Fields", "No Code Name StartDate EndDate Content");
         Map<String, String> filtVals = new HashMap<>();
         filtVals.put("IsVisManaged", "true");
         filtVals.put("HasBeachTournament", "true");

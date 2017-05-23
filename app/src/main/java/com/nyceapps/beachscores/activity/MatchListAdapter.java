@@ -1,4 +1,4 @@
-package com.nyceapps.beachscores;
+package com.nyceapps.beachscores.activity;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.nyceapps.beachscores.entity.Event;
+import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Match;
 
 import java.text.DateFormat;
@@ -28,7 +28,7 @@ class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder>
 
     @Override
     public MatchListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_list_row, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.match_list_row, parent, false);
         return new ViewHolder(v);
     }
 
@@ -37,7 +37,14 @@ class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder>
         Match match = matchList.get(position);
 
         String matchName = match.getTeamAName() + " vs. " + match.getTeamBName();
-        holder.nameTextView.setText(matchName);
+        holder.titleView.setText(matchName);
+
+        StringBuilder eventInfo = new StringBuilder();
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String localDateStr = df.format(match.getLocalDate());
+        eventInfo.append(localDateStr).append(", ");
+        eventInfo.append(match.getCourt());
+        holder.infoView.setText(eventInfo.toString());
 
         holder.itemView.setTag(match);
     }
@@ -50,15 +57,13 @@ class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder>
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public TextView nameTextView;
-        public TextView periodTextView;
-        public TextView locationTextView;
+        public TextView titleView;
+        public TextView infoView;
 
         public ViewHolder(View v) {
             super(v);
-            nameTextView = (TextView) v.findViewById(R.id.match_name);
-            periodTextView = (TextView) v.findViewById(R.id.match_period);
-            locationTextView = (TextView) v.findViewById(R.id.match_location);
+            titleView = (TextView) v.findViewById(R.id.match_title);
+            infoView = (TextView) v.findViewById(R.id.match_info);
             v.setOnClickListener(this);
         }
 

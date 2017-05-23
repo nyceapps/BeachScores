@@ -7,20 +7,14 @@
     android:focusable="true"
     android:foreground="?selectableItemBackground">
     <TextView
-        android:id="@+id/match_period"
-        android:text="Match"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-    <TextView
-        android:id="@+id/match_name"
-        android:text="Match"
+        android:id="@+id/match_title"
+        android:text="Event"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <TextView
-        android:id="@+id/match_location"
-        android:text="Match"
+        android:id="@+id/match_info"
+        android:text="Event"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall" />

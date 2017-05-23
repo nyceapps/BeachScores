@@ -7,19 +7,13 @@
     android:focusable="true"
     android:foreground="?selectableItemBackground">
     <TextView
-        android:id="@+id/event_period"
-        android:text="Event"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-    <TextView
-        android:id="@+id/event_name"
+        android:id="@+id/event_title"
         android:text="Event"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <TextView
-        android:id="@+id/event_location"
+        android:id="@+id/event_info"
         android:text="Event"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

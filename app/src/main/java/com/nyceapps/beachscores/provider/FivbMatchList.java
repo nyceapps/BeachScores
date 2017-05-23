@@ -70,17 +70,117 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
             int eventType = xpp.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG) {
-                    if ("Event".equals(xpp.getName())) {
+                    if ("BeachMatch".equals(xpp.getName())) {
                         Match match = new Match();
+
+                        String localDateStr = null;
+                        String localTimeStr = null;
                         for (int i = 0; i < xpp.getAttributeCount(); i++) {
                             String attrName = xpp.getAttributeName(i);
                             String attrValue = xpp.getAttributeValue(i);
-                            if ("TeamAName".equals(attrName)) {
+                            if ("No".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    long no = Long.parseLong(attrValue);
+                                    match.setNo(no);
+                                }
+                            } else if ("NoTournament".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    long tournamentNo = Long.parseLong(attrValue);
+                                    match.setTournamentNo(tournamentNo);
+                                }
+                            } else if ("NoInTournament".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int noInTournament = Integer.parseInt(attrValue);
+                                    match.setNoInTournament(noInTournament);
+                                }
+                            } else if ("RoundName".equals(attrName)) {
+                                match.setRoundName(attrValue);
+                            } else if ("RoundPhase".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int roundPhase = Integer.parseInt(attrValue);
+                                    match.setRoundPhase(roundPhase);
+                                }
+                            } else if ("Status".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int status = Integer.parseInt(attrValue);
+                                    match.setStatus(status);
+                                }
+                            } else if ("LocalDate".equals(attrName)) {
+                                localDateStr = attrValue;
+                            } else if ("LocalTime".equals(attrName)) {
+                                localTimeStr = attrValue;
+                            } else if ("TeamAName".equals(attrName)) {
                                 match.setTeamAName(attrValue);
                             } else if ("TeamBName".equals(attrName)) {
                                 match.setTeamBName(attrValue);
+                            } else if ("Court".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int court = Integer.parseInt(attrValue);
+                                    match.setCourt(court);
+                                }
+                            } else if ("PointsTeamASet1".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamASet1(points);
+                                }
+                            } else if ("PointsTeamBSet1".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamBSet1(points);
+                                }
+                            } else if ("PointsTeamASet2".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamASet2(points);
+                                }
+                            } else if ("PointsTeamBSet2".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamBSet2(points);
+                                }
+                            } else if ("PointsTeamASet3".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamASet3(points);
+                                }
+                            } else if ("PointsTeamBSet3".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int points = Integer.parseInt(attrValue);
+                                    match.setPointsTeamBSet3(points);
+                                }
+                            } else if ("DurationSet1".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int duration = Integer.parseInt(attrValue);
+                                    match.setDurationSet1(duration);
+                                }
+                            } else if ("DurationSet2".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int duration = Integer.parseInt(attrValue);
+                                    match.setDurationSet2(duration);
+                                }
+                            } else if ("DurationSet3".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    int duration = Integer.parseInt(attrValue);
+                                    match.setDurationSet3(duration);
+                                }
                             }
                         }
+                        if (!TextUtils.isEmpty(localDateStr)) {
+                            String localDateTimeStr = localDateStr + " ";
+                            if (!TextUtils.isEmpty(localTimeStr)) {
+                                localDateTimeStr += localTimeStr;
+                            } else {
+                                localDateTimeStr += "00:00:00";
+                            }
+                            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            try {
+                                Date localDate = df.parse(localDateTimeStr);
+                                match.setLocalDate(localDate);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                         matchList.add(match);
                     }
                 }
@@ -101,13 +201,20 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
     }
 
     private String getBodyContent() {
+        StringBuilder matchListReqs = new StringBuilder();
         Map<String, String> reqVals = new HashMap<>();
         reqVals.put("Type", "GetBeachMatchList");
-        reqVals.put("Fields", "NoInTournament LocalDate LocalTime TeamAName TeamBName Court MatchPointsA MatchPointsB PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
+        reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime TeamAName TeamBName Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
         Map<String, String> filtVals = new HashMap<>();
-        filtVals.put("NoTournament", String.valueOf(event.getNo()));
-
-        String requestBody = FivbXmlUtils.getRequestString(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+        if (event.hasWomenTournament()) {
+            filtVals.put("NoTournament", String.valueOf(event.getWomenTournamentNo()));
+            matchListReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+        }
+        if (event.hasMenTournament()) {
+            filtVals.put("NoTournament", String.valueOf(event.getMenTournamentNo()));
+            matchListReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+        }
+        String requestBody = FivbXmlUtils.getRequestString(matchListReqs.toString());
         return requestBody;
     }
 }

@@ -1,13 +1,15 @@
-package com.nyceapps.beachscores;
+package com.nyceapps.beachscores.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.provider.FivbEventList;
 import com.nyceapps.beachscores.provider.EventListResponse;
@@ -22,14 +24,18 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_event_list);
 
         RecyclerView eventListView = (RecyclerView) findViewById(R.id.event_list_view);
+
 
         eventListView.setHasFixedSize(true);
 
         LinearLayoutManager eventListLayoutManager = new LinearLayoutManager(this);
         eventListView.setLayoutManager(eventListLayoutManager);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(eventListView.getContext(), eventListLayoutManager.getOrientation());
+        eventListView.addItemDecoration(dividerItemDecoration);
 
         List<Event> dummyEventList = new ArrayList<>();
         eventListAdapter = new EventListAdapter(dummyEventList, this);
