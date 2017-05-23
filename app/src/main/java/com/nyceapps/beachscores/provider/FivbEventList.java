@@ -115,8 +115,6 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     }
 
     private void processTournamentData(Event pEvent, String pXml, Set<String> pTourneyNos) {
-        Map<String, String> tournaments = new HashMap<>();
-
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -140,7 +138,14 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                             }
                         }
                         if (key != null && value != null) {
-                            tournaments.put(key, value);
+                            if (TextUtils.isDigitsOnly(value)) {
+                                long genderNo = Long.parseLong(value);
+                                if ("W".equalsIgnoreCase(key)) {
+                                    pEvent.setWomenTournamentNo(genderNo);
+                                } else {
+                                    pEvent.setMenTournamentNo(genderNo);
+                                }
+                            }
                         }
                     }
                 }
@@ -151,8 +156,6 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        pEvent.setTournaments(tournaments);
     }
 
     private void processAdditionalTournamentData(List<Event> pEventList, Set<String> pTourneyNos) {
@@ -219,6 +222,8 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                 if (tourneyEvent != null) {
                     mainEvent.setName(tourneyEvent.getName());
                     mainEvent.setTitle(tourneyEvent.getTitle());
+                    mainEvent.setType(tourneyEvent.getType());
+                    mainEvent.setStatus(tourneyEvent.getStatus());
                     pEventList.set(i, mainEvent);
                 } else {
                     pEventList.remove(i);

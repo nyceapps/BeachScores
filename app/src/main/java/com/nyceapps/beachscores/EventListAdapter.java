@@ -17,10 +17,12 @@ import java.util.List;
  */
 
 class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder> {
-    List<Event> eventList;
+    private List<Event> eventList;
+    private ActivityDelegate delegate;
 
-    public EventListAdapter(List<Event> pEventList) {
+    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate) {
         eventList = pEventList;
+        delegate = pDelegate;
     }
 
     @Override
@@ -44,6 +46,8 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
 
         String eventLocation = event.getName();
         holder.locationTextView.setText(eventLocation);
+
+        holder.itemView.setTag(event);
     }
 
     public void updateList(List<Event> pEventList) {
@@ -68,10 +72,7 @@ class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.ViewHolder>
 
         @Override
         public void onClick(View v) {
-            /*
-            ChoreItem chore = (ChoreItem) imageImageView.getTag();
-            callingActivity.editChore(chore);
-            */
+            delegate.onClick(v);
         }
     }
 
