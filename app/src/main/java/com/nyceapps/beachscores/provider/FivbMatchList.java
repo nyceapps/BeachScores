@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
+import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.util.FivbXmlUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
@@ -32,7 +33,7 @@ import java.util.Set;
  * Created by lugosi on 21.05.17.
  */
 
-public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
+public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     private Event event;
     private MatchListResponse delegate;
 
@@ -41,12 +42,12 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
     }
 
     @Override
-    protected List<Match> doInBackground(Event... params) {
+    protected MatchMap doInBackground(Event... params) {
         event = params[0];
 
         String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
-        List<Match> matchList = processXml(response);
+        MatchMap matchMap = processXml(response);
         /*
         Collections.sort(matchList, new Comparator<Event>() {
             @Override
@@ -55,11 +56,13 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
             }
         });
         */
-        return matchList;
+        return matchMap;
     }
 
-    private List<Match> processXml(String pResponse) {
-        List<Match> matchList = new ArrayList<>();
+    private MatchMap processXml(String pResponse) {
+        MatchMap matchMap = new MatchMap();
+        int currGender = -1;
+        int currPhase = -1;
 
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -70,7 +73,9 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
             int eventType = xpp.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG) {
-                    if ("BeachMatch".equals(xpp.getName())) {
+                    if ("BeachMatches".equals(xpp.getName())) {
+                        currGender++;
+                    } else if ("BeachMatch".equals(xpp.getName())) {
                         Match match = new Match();
 
                         String localDateStr = null;
@@ -99,6 +104,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                     int roundPhase = Integer.parseInt(attrValue);
                                     match.setRoundPhase(roundPhase);
+                                    currPhase = roundPhase;
                                 }
                             } else if ("Status".equals(attrName)) {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
@@ -181,7 +187,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
                             }
                         }
 
-                        matchList.add(match);
+                        matchMap.put(currGender, currPhase, match);
                     }
                 }
                 eventType = xpp.next();
@@ -192,12 +198,12 @@ public class FivbMatchList extends AsyncTask<Event, Void, List<Match>> {
             e.printStackTrace();
         }
 
-        return matchList;
+        return matchMap;
     }
 
     @Override
-    protected void onPostExecute(List<Match> pMatchList) {
-        delegate.processMatchList(pMatchList);
+    protected void onPostExecute(MatchMap pMatchMap) {
+        delegate.processMatchList(pMatchMap);
     }
 
     private String getBodyContent() {

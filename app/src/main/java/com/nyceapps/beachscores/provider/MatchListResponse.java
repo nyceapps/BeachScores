@@ -2,6 +2,7 @@ package com.nyceapps.beachscores.provider;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
+import com.nyceapps.beachscores.entity.MatchMap;
 
 import java.util.List;
 
@@ -10,5 +11,5 @@ import java.util.List;
  */
 
 public interface MatchListResponse {
-    void processMatchList(List<Match> pMatchList);
+    void processMatchList(MatchMap pMatchMap);
 }
