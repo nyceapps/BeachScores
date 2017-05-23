@@ -73,7 +73,10 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                             String attrName = xpp.getAttributeName(i);
                             String attrValue = xpp.getAttributeValue(i);
                             if ("No".equals(attrName)) {
-                                    event.setNo(attrValue);
+                                if (TextUtils.isDigitsOnly(attrValue)) {
+                                    long no = Long.parseLong(attrValue);
+                                    event.setNo(no);
+                                }
                             } else if ("Code".equals(attrName)) {
                                 event.setCode(attrValue);
                             } else if ("Name".equals(attrName)) {
@@ -165,13 +168,13 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
             reqVals.put("Type", "GetBeachTournament");
             reqVals.put("Fields", "NoEvent Name Title Status Type");
             for (String tourneyNo : pTourneyNos) {
-                reqVals.put("No", tourneyNo);
+                reqVals.put("No", String.valueOf(tourneyNo));
                 tourneyReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, null));
             }
             String reqBody = FivbXmlUtils.getRequestString(tourneyReqs.toString());
             String response = ServiceUtils.getResponseString(BASE_URL, "Request", reqBody);
 
-            Map<String, Event> tourneyData = new HashMap<>();
+            Map<Long, Event> tourneyData = new HashMap<>();
             try {
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -183,16 +186,24 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                     if (eventType == XmlPullParser.START_TAG) {
                         if ("BeachTournament".equals(xpp.getName())) {
                             Event event = new Event();
-                            String eventNo = null;
+                            long eventNo = -1;
                             for (int i = 0; i < xpp.getAttributeCount(); i++) {
                                 String attrName = xpp.getAttributeName(i);
                                 String attrValue = xpp.getAttributeValue(i);
                                 if ("NoEvent".equals(attrName)) {
-                                    eventNo = attrValue;
-                                } else if ("Status".equals(attrName)) {
-                                    event.setStatus(attrValue);
+                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                        eventNo = Long.parseLong(attrValue);
+                                    }
                                 } else if ("Type".equals(attrName)) {
-                                    event.setType(attrValue);
+                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                        int type = Integer.parseInt(attrValue);
+                                        event.setType(type);
+                                    }
+                                } else if ("Status".equals(attrName)) {
+                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                        int status = Integer.parseInt(attrValue);
+                                        event.setStatus(status);
+                                    }
                                 } else if ("Name".equals(attrName)) {
                                     event.setName(attrValue);
                                 } else if ("Title".equals(attrName)) {
@@ -233,12 +244,12 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     }
 
     private boolean isEventQualified(Event pEvent) {
-        String status = pEvent.getStatus();
-        if (!"1".equals(status) && !"6".equals(status) && !"7".equals(status) && !"8".equals(status) && !"8".equals(status)) {
+        int status = pEvent.getStatus();
+        if (status != 1 && status != 6 && status != 7 && status != 8 && status != 9) {
             return false;
         }
-        String type = pEvent.getType();
-        if ("35".equals(type)) {
+        int type = pEvent.getType();
+        if (type == 35) {
             return false;
         }
         String name = pEvent.getName();

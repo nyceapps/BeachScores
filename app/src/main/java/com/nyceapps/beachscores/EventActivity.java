@@ -16,6 +16,7 @@ public class EventActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Event event = intent.getParcelableExtra("event");
 
-        String no = event.getNo();
+        String title = event.getTitle();
+        setTitle(title);
     }
 }

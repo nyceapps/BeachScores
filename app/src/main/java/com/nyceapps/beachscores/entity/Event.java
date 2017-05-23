@@ -10,9 +10,9 @@ import java.util.Date;
  */
 
 public class Event implements Parcelable {
-    private String type;
-    private String status;
-    private String no;
+    private int type;
+    private int status;
+    private long no;
     private String code;
     private String name;
     private String title;
@@ -24,27 +24,27 @@ public class Event implements Parcelable {
     public Event() {
     }
 
-    public String getType() {
+    public int getType() {
         return type;
     }
 
-    public void setType(String pType) {
+    public void setType(int pType) {
         type = pType;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String pStatus) {
+    public void setStatus(int pStatus) {
         status = pStatus;
     }
 
-    public String getNo() {
+    public long getNo() {
         return no;
     }
 
-    public void setNo(String pNo) {
+    public void setNo(long pNo) {
         no = pNo;
     }
 
@@ -96,12 +96,20 @@ public class Event implements Parcelable {
         womenTournamentNo = pWomenTournamentNo;
     }
 
+    public boolean hasWomenTournament() {
+        return (womenTournamentNo > -1);
+    }
+
     public long getMenTournamentNo() {
         return menTournamentNo;
     }
 
     public void setMenTournamentNo(long pMenTournamentNo) {
         menTournamentNo = pMenTournamentNo;
+    }
+
+    public boolean hasMenTournament() {
+        return (menTournamentNo > -1);
     }
 
     @Override
@@ -111,9 +119,9 @@ public class Event implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeString(type);
-        out.writeString(status);
-        out.writeString(no);
+        out.writeInt(type);
+        out.writeInt(status);
+        out.writeLong(no);
         out.writeString(code);
         out.writeString(name);
         out.writeString(title);
@@ -134,9 +142,9 @@ public class Event implements Parcelable {
     };
 
     public Event(Parcel in) {
-        type = in.readString();
-        status = in.readString();
-        no = in.readString();
+        type = in.readInt();
+        status = in.readInt();
+        no = in.readLong();
         code = in.readString();
         name = in.readString();
         title = in.readString();
