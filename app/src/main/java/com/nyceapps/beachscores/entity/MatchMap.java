@@ -1,6 +1,8 @@
 package com.nyceapps.beachscores.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,5 +43,33 @@ public class MatchMap {
             return new ArrayList<>();
         }
         return phaseList;
+    }
+
+    public void sort() {
+        for (Map.Entry<Integer, Map<Integer, List<Match>>> mainMap : matchMap.entrySet()) {
+            Integer currGender = mainMap.getKey();
+            Map<Integer, List<Match>> genderMap = mainMap.getValue();
+            for (Map.Entry<Integer, List<Match>> phaseMap : genderMap.entrySet()) {
+                Integer currPhase = phaseMap.getKey();
+                List<Match> phaseList = phaseMap.getValue();
+                Collections.sort(phaseList, new Comparator<Match>() {
+                    @Override
+                    public int compare(Match m0, Match m1) {
+                        int sort0 = (m1.getLocalDate().compareTo(m0.getLocalDate()));
+                        if (sort0 == 0) {
+                            if (m0.getCourt() < m1.getCourt()) {
+                                return -1;
+                            } else if (m0.getCourt() > m1.getCourt()) {
+                                return 1;
+                            }
+                            return 0;
+                        }
+                        return sort0;
+                    }
+                });
+                genderMap.put(currPhase, phaseList);
+                matchMap.put(currGender, genderMap);
+            }
+        }
     }
 }

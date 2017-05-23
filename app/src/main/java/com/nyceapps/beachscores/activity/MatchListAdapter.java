@@ -42,8 +42,11 @@ class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder>
         StringBuilder eventInfo = new StringBuilder();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String localDateStr = df.format(match.getLocalDate());
-        eventInfo.append(localDateStr).append(", ");
-        eventInfo.append(match.getCourt());
+        eventInfo.append(localDateStr);
+        int court = match.getCourt();
+        if (court > -1) {
+            eventInfo.append(", Court ").append(court);
+        }
         holder.infoView.setText(eventInfo.toString());
 
         holder.itemView.setTag(match);

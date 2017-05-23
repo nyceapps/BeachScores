@@ -48,14 +48,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         MatchMap matchMap = processXml(response);
-        /*
-        Collections.sort(matchList, new Comparator<Event>() {
-            @Override
-            public int compare(Event e0, Event e1) {
-                return e0.getStartDate().compareTo(e1.getStartDate());
-            }
-        });
-        */
+        matchMap.sort();
         return matchMap;
     }
 
