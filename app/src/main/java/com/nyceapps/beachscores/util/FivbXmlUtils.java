@@ -25,6 +25,10 @@ public class FivbXmlUtils {
     private FivbXmlUtils() {
     }
 
+    public static String getRequestBaseUrl() {
+        return "http://www.fivb.org/Vis2009/XmlRequest.asmx";
+    }
+
     public static String getSingleRequestString(Map<String, String> pRequestValues, Map<String, String> pFilterValues) {
         StringBuilder reqStr = new StringBuilder();
 

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Toast;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.provider.FivbEventList;
@@ -54,7 +53,7 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
     public void onClick(View v) {
         Event event = (Event) v.getTag();
         if (event != null) {
-            Intent intent = new Intent(this, EventActivity.class);
+            Intent intent = new Intent(this, MatchListActivity.class);
             intent.putExtra("event", event);
             startActivity(intent);
         }

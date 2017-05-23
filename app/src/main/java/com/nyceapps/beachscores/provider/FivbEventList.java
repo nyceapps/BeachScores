@@ -32,8 +32,6 @@ import java.util.Set;
  */
 
 public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
-    private final static String BASE_URL = "http://www.fivb.org/Vis2009/XmlRequest.asmx";
-
     private EventListResponse delegate;
 
     public FivbEventList(EventListResponse pDelegate) {
@@ -42,7 +40,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     @Override
     protected List<Event> doInBackground(Void... params) {
-        String response = ServiceUtils.getResponseString(BASE_URL, "Request", getBodyContent());
+        String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         List<Event> eventList = processXml(response);
         Collections.sort(eventList, new Comparator<Event>() {
@@ -172,7 +170,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                 tourneyReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, null));
             }
             String reqBody = FivbXmlUtils.getRequestString(tourneyReqs.toString());
-            String response = ServiceUtils.getResponseString(BASE_URL, "Request", reqBody);
+            String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", reqBody);
 
             Map<Long, Event> tourneyData = new HashMap<>();
             try {
@@ -275,8 +273,8 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     }
 
     @Override
-    protected void onPostExecute(List<Event> pEvents) {
-        delegate.processEventList(pEvents);
+    protected void onPostExecute(List<Event> pEventList) {
+        delegate.processEventList(pEventList);
     }
 
     private String getBodyContent() {
