@@ -1,6 +1,5 @@
 package com.nyceapps.beachscores.activity;
 
-import android.content.ClipData;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +34,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
 
     @Override
     protected HeaderViewHolder onCreateSectionHeaderViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.match_list_header, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_header, parent, false);
         return new HeaderViewHolder(v);
     }
 
@@ -100,10 +99,10 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
 
         public HeaderViewHolder(View v) {
             super(v);
-            titleView = (TextView) v.findViewById(R.id.match_header_title);
+            titleView = (TextView) v.findViewById(R.id.header_title);
         }
-
     }
+
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView titleView;
         public TextView infoView;
