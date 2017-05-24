@@ -47,6 +47,7 @@ class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder>
         if (court > -1) {
             eventInfo.append(", Court ").append(court);
         }
+        eventInfo.append(", ").append(match.getRoundName());
         holder.infoView.setText(eventInfo.toString());
 
         holder.itemView.setTag(match);
