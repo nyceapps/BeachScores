@@ -38,7 +38,7 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
         eventListView.addItemDecoration(dividerItemDecoration);
 
         List<Event> dummyEventList = new ArrayList<>();
-        eventListAdapter = new EventListAdapter(dummyEventList, this, this);
+        eventListAdapter = new EventListAdapter(dummyEventList, this);
         eventListView.setAdapter(eventListAdapter);
 
         progressDialog = new ProgressDialog(this);

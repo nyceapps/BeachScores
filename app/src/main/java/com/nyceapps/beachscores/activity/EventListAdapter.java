@@ -1,8 +1,7 @@
 package com.nyceapps.beachscores.activity;
 
-import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +28,12 @@ import java.util.Map;
 class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.HeaderViewHolder, EventListAdapter.ItemViewHolder, EventListAdapter.FooterViewHolder> {
     private List<Event> eventList;
     private ActivityDelegate delegate;
-    private final Context context;
     private List<String> eventSections;
     private Map<String, List<Event>> eventItems;
 
-    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate, Context pContext) {
+    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate) {
         eventList = pEventList;
         delegate = pDelegate;
-        context = pContext;
     }
 
     @Override
@@ -77,6 +74,7 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
         List<Event> eventData = eventItems.get(sectionKey);
         if (eventData != null) {
             Event event = eventData.get(position);
+            Log.i("MAIN", event.getTitle() + "[" + event.getName() + "] = " + event.getValue());
 
             String eventTitle = event.getTitle();
             holder.titleView.setText(eventTitle);
@@ -90,17 +88,22 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
             holder.infoView.setText(eventInfo.toString());
 
             if (event.hasWomenTournament() && event.hasMenTournament()) {
-                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_male_female));
+                holder.genderView.setImageResource(R.drawable.gender_male_female);
             } else if (event.hasWomenTournament()) {
-                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_female));
+                holder.genderView.setImageResource(R.drawable.gender_female);
             } else if (event.hasMenTournament()){
-                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_male));
+                holder.genderView.setImageResource(R.drawable.gender_male);
+            } else {
+                holder.genderView.setImageResource(0);
             }
 
             int value = event.getValue();
             if (value > 0) {
                 holder.valueTextView.setText(String.valueOf(value));
-                holder.valueImageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.star));
+                holder.valueImageView.setImageResource(R.drawable.star);
+            } else {
+                holder.valueTextView.setText("");
+                holder.valueImageView.setImageResource(0);
             }
 
             holder.itemView.setTag(event);
