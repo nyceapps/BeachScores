@@ -196,10 +196,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                     if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                         int type = Integer.parseInt(attrValue);
                                         event.setType(type);
-                                        if (type >= 38 && type <= 42) {
-                                            int value = -1 * (type - 42) + 1;
-                                            event.setValue(value);
-                                        }
+                                        setTournamentValue(event);
                                     }
                                 } else if ("Status".equals(attrName)) {
                                     if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
@@ -243,6 +240,14 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                     pEventList.remove(i);
                 }
             }
+        }
+    }
+
+    private void setTournamentValue(Event pEvent) {
+        int type = pEvent.getType();
+        if (type >= 38 && type <= 42) {
+            int value = -1 * (type - 42) + 1;
+            pEvent.setValue(value);
         }
     }
 
