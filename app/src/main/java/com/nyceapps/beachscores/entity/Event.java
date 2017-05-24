@@ -20,6 +20,7 @@ public class Event implements Parcelable {
     private Date endDate;
     private long womenTournamentNo = -1;
     private long menTournamentNo = -1;
+    private int value = -1;
 
     public Event() {
     }
@@ -110,6 +111,14 @@ public class Event implements Parcelable {
 
     public boolean hasMenTournament() {
         return (menTournamentNo > -1);
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int pValue) {
+        value = pValue;
     }
 
     @Override

@@ -1,9 +1,12 @@
 package com.nyceapps.beachscores.activity;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nyceapps.beachscores.R;
@@ -16,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -25,12 +29,14 @@ import java.util.Map;
 class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.HeaderViewHolder, EventListAdapter.ItemViewHolder, EventListAdapter.FooterViewHolder> {
     private List<Event> eventList;
     private ActivityDelegate delegate;
+    private final Context context;
     private List<String> eventSections;
     private Map<String, List<Event>> eventItems;
 
-    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate) {
+    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate, Context pContext) {
         eventList = pEventList;
         delegate = pDelegate;
+        context = pContext;
     }
 
     @Override
@@ -77,20 +83,25 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
 
             StringBuilder eventInfo = new StringBuilder();
             eventInfo.append(event.getName()).append(", ");
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault());
             String startDateStr = df.format(event.getStartDate());
             String endDateStr = df.format(event.getEndDate());
-            eventInfo.append(startDateStr + " - " + endDateStr).append(", ");
-            if (event.hasWomenTournament()) {
-                eventInfo.append("W");
-                if (event.hasMenTournament()) {
-                    eventInfo.append("/");
-                }
-            }
-            if (event.hasMenTournament()) {
-                eventInfo.append("M");
-            }
+            eventInfo.append(startDateStr + " - " + endDateStr);
             holder.infoView.setText(eventInfo.toString());
+
+            if (event.hasWomenTournament() && event.hasMenTournament()) {
+                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_male_female));
+            } else if (event.hasWomenTournament()) {
+                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_female));
+            } else if (event.hasMenTournament()){
+                holder.genderView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.gender_male));
+            }
+
+            int value = event.getValue();
+            if (value > 0) {
+                holder.valueTextView.setText(String.valueOf(value));
+                holder.valueImageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.star));
+            }
 
             holder.itemView.setTag(event);
         }
@@ -112,12 +123,17 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView titleView;
         public TextView infoView;
-        public TextView locationTextView;
+        public ImageView genderView;
+        public TextView valueTextView;
+        public ImageView valueImageView;
 
         public ItemViewHolder(View v) {
             super(v);
             titleView = (TextView) v.findViewById(R.id.event_title);
             infoView = (TextView) v.findViewById(R.id.event_info);
+            genderView = (ImageView) v.findViewById(R.id.event_gender_image);
+            valueTextView = (TextView) v.findViewById(R.id.event_value_text);
+            valueImageView = (ImageView) v.findViewById(R.id.event_value_image);
             v.setOnClickListener(this);
         }
 
