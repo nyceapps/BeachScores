@@ -55,16 +55,13 @@ public class MatchMap {
                 Collections.sort(phaseList, new Comparator<Match>() {
                     @Override
                     public int compare(Match m0, Match m1) {
-                        int sort0 = (m1.getLocalDate().compareTo(m0.getLocalDate()));
-                        if (sort0 == 0) {
-                            if (m0.getCourt() < m1.getCourt()) {
-                                return -1;
-                            } else if (m0.getCourt() > m1.getCourt()) {
-                                return 1;
-                            }
+                        if (m0.getNoInTournament() < m1.getNoInTournament()) {
+                            return 1;
+                        } else if (m0.getNoInTournament() > m1.getNoInTournament()) {
+                            return -1;
+                        } else {
                             return 0;
                         }
-                        return sort0;
                     }
                 });
                 genderMap.put(currPhase, phaseList);
