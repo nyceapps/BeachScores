@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -71,23 +72,67 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         if (matchData != null) {
             Match match = matchData.get(position);
 
-            String matchName = match.getTeamAName() + " vs. " + match.getTeamBName();
-            holder.titleView.setText(matchName);
+            holder.teamAView.setText(match.getTeamAName());
+            holder.teamBView.setText(match.getTeamBName());
+
+            int pointsTeamASet1 = match.getPointsTeamASet1();
+            int pointsTeamASet2 = match.getPointsTeamASet2();
+            int pointsTeamASet3 = match.getPointsTeamASet3();
+            int pointsTeamBSet1 = match.getPointsTeamBSet1();
+            int pointsTeamBSet2 = match.getPointsTeamBSet2();
+            int pointsTeamBSet3 = match.getPointsTeamBSet3();
+
+            int teamASets = 0;
+            int teamBSets = 0;
+            if (Math.abs(pointsTeamASet1 - pointsTeamBSet1) >= 2) {
+                if (pointsTeamASet1 >= 21 && pointsTeamASet1 > pointsTeamBSet1) {
+                    teamASets++;
+                } else if (pointsTeamBSet1 >= 21 && pointsTeamBSet1 > pointsTeamASet1) {
+                    teamBSets++;
+                }
+            }
+            if (Math.abs(pointsTeamASet2 - pointsTeamBSet2) >= 2) {
+                if (pointsTeamASet2 >= 21 && pointsTeamASet2 > pointsTeamBSet2) {
+                    teamASets++;
+                } else if (pointsTeamBSet2 >= 21 && pointsTeamBSet2 > pointsTeamASet2) {
+                    teamBSets++;
+                }
+            }
+            if (Math.abs(pointsTeamASet3 - pointsTeamBSet3) >= 2) {
+                if (pointsTeamASet3 >= 15 && pointsTeamASet3 > pointsTeamBSet3) {
+                    teamASets++;
+                } else if (pointsTeamBSet3 >= 15 && pointsTeamBSet3 > pointsTeamASet3) {
+                    teamBSets++;
+                }
+            }
+
+            holder.teamASetsView.setText(String.valueOf(teamASets));
+            holder.teamBSetsView.setText(String.valueOf(teamBSets));
 
             StringBuilder eventInfo = new StringBuilder();
-            eventInfo.append("#").append(match.getNoInTournament()).append(", ");
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String localDateStr = df.format(match.getLocalDate());
-            eventInfo.append(localDateStr);
+            eventInfo.append("Game #").append(match.getNoInTournament()).append(" | ");
+            String localDayStr = getLocalDayString(match);
+            eventInfo.append(localDayStr).append(" ");
+            String localTimeStr = getLocalTimeString(match);
+            eventInfo.append(localTimeStr);
             int court = match.getCourt();
             if (court > -1) {
-                eventInfo.append(", Court ").append(court);
+                eventInfo.append(" | ").append("Court ").append(court);
             }
-            eventInfo.append(", ").append(match.getRoundName());
             holder.infoView.setText(eventInfo.toString());
 
             holder.itemView.setTag(match);
         }
+    }
+
+    private String getLocalDayString(Match match) {
+        DateFormat dfDay = new SimpleDateFormat("EEEE");
+        return dfDay.format(match.getLocalDate());
+    }
+
+    private String getLocalTimeString(Match match) {
+        DateFormat dfTime = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
+        return dfTime.format(match.getLocalDate());
     }
 
     @Override
@@ -104,12 +149,18 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
     }
 
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public TextView titleView;
+        public TextView teamAView;
+        public TextView teamBView;
+        public TextView teamASetsView;
+        public TextView teamBSetsView;
         public TextView infoView;
 
         public ItemViewHolder(View v) {
             super(v);
-            titleView = (TextView) v.findViewById(R.id.match_title);
+            teamAView = (TextView) v.findViewById(R.id.match_team_a);
+            teamBView = (TextView) v.findViewById(R.id.match_team_b);
+            teamASetsView = (TextView) v.findViewById(R.id.match_team_a_sets);
+            teamBSetsView = (TextView) v.findViewById(R.id.match_team_b_sets);
             infoView = (TextView) v.findViewById(R.id.match_info);
             v.setOnClickListener(this);
         }

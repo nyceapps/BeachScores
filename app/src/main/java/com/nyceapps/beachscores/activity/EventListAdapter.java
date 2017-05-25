@@ -1,5 +1,9 @@
 package com.nyceapps.beachscores.activity;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +19,7 @@ import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +33,14 @@ import java.util.Map;
 class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.HeaderViewHolder, EventListAdapter.ItemViewHolder, EventListAdapter.FooterViewHolder> {
     private List<Event> eventList;
     private ActivityDelegate delegate;
+    private final Context context;
     private List<String> eventSections;
     private Map<String, List<Event>> eventItems;
 
-    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate) {
+    public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate, Context pContext) {
         eventList = pEventList;
         delegate = pDelegate;
+        context = pContext;
     }
 
     @Override
@@ -74,25 +81,49 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
         List<Event> eventData = eventItems.get(sectionKey);
         if (eventData != null) {
             Event event = eventData.get(position);
-            Log.i("MAIN", event.getTitle() + "[" + event.getName() + "] = " + event.getValue());
+            //Log.i("MAIN", event.getTitle() + "[" + event.getName() + "] = " + event.getValue());
+
+            Date now = new Date();
+
+            int textColor = ContextCompat.getColor(context, R.color.colorTextDark);
+            if (event.getEndDate().before(now)) {
+                textColor = ContextCompat.getColor(context, R.color.colorTextLighter);
+            } else if (event.getStartDate().after(now)) {
+                textColor = ContextCompat.getColor(context, R.color.colorTextDarker);
+            }
+
+            Drawable drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_dark);
+            Drawable drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_dark);
+            Drawable drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_dark);
+            Drawable drawableValue = ContextCompat.getDrawable(context, R.drawable.star_dark);
+            if (event.getEndDate().before(now)) {
+                drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_lighter);
+                drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_lighter);
+                drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_lighter);
+                drawableValue = ContextCompat.getDrawable(context, R.drawable.star_lighter);
+            } else if (event.getStartDate().after(now)) {
+                drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_darker);
+                drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_darker);
+                drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_darker);
+                drawableValue = ContextCompat.getDrawable(context, R.drawable.star_darker);
+            }
 
             String eventTitle = event.getTitle();
             holder.titleView.setText(eventTitle);
+            holder.titleView.setTextColor(textColor);
 
             StringBuilder eventInfo = new StringBuilder();
-            eventInfo.append(event.getName()).append(", ");
-            DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault());
-            String startDateStr = df.format(event.getStartDate());
-            String endDateStr = df.format(event.getEndDate());
-            eventInfo.append(startDateStr + " - " + endDateStr);
+            String fromToDateStr = getFromToDateString(event);
+            eventInfo.append(fromToDateStr).append(" | ").append(event.getName());
             holder.infoView.setText(eventInfo.toString());
+            holder.infoView.setTextColor(textColor);
 
             if (event.hasWomenTournament() && event.hasMenTournament()) {
-                holder.genderView.setImageResource(R.drawable.gender_male_female);
+                holder.genderView.setImageDrawable(drawableMaleFemale);
             } else if (event.hasWomenTournament()) {
-                holder.genderView.setImageResource(R.drawable.gender_female);
+                holder.genderView.setImageDrawable(drawableFemale);
             } else if (event.hasMenTournament()){
-                holder.genderView.setImageResource(R.drawable.gender_male);
+                holder.genderView.setImageDrawable(drawableMale);
             } else {
                 holder.genderView.setImageResource(0);
             }
@@ -100,14 +131,30 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
             int value = event.getValue();
             if (value > 0) {
                 holder.valueTextView.setText(String.valueOf(value));
-                holder.valueImageView.setImageResource(R.drawable.star);
+                holder.valueImageView.setImageDrawable(drawableValue);
             } else {
                 holder.valueTextView.setText("");
                 holder.valueImageView.setImageResource(0);
             }
+            holder.valueTextView.setTextColor(textColor);
 
             holder.itemView.setTag(event);
         }
+    }
+
+    @NonNull
+    private String getFromToDateString(Event event) {
+        Calendar cal = Calendar.getInstance(Locale.getDefault());
+        cal.setTime(event.getStartDate());
+        int startMonth = cal.get(Calendar.MONTH);
+        cal.setTime(event.getEndDate());
+        int endMonth = cal.get(Calendar.MONTH);
+
+        DateFormat dfStart = (startMonth == endMonth ? new SimpleDateFormat("dd") : new SimpleDateFormat("dd MMMM"));
+        String startDateStr = dfStart.format(event.getStartDate());
+        DateFormat dfEnd = new SimpleDateFormat("dd MMMM");
+        String endDateStr = dfEnd.format(event.getEndDate());
+        return startDateStr + " - " + endDateStr;
     }
 
     @Override

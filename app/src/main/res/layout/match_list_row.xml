@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp"
@@ -8,15 +7,37 @@
     android:focusable="true"
     android:foreground="?selectableItemBackground">
     <TextView
-        android:id="@+id/match_title"
-        android:text="Event"
-        android:layout_width="match_parent"
+        android:id="@+id/match_team_a"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:id="@+id/match_team_b"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/match_team_a"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:id="@+id/match_team_a_sets"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/match_team_a"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:id="@+id/match_team_b_sets"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/match_team_a_sets"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <TextView
         android:id="@+id/match_info"
-        android:text="Event"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/match_team_b"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall" />
-</LinearLayout>
+</RelativeLayout>
