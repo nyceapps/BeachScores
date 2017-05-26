@@ -111,49 +111,42 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                 } else if (pointsTeamBSet1 >= 21 && pointsTeamBSet1 > pointsTeamASet1) {
                     teamBSets++;
                 }
-            }
-            if (Math.abs(pointsTeamASet2 - pointsTeamBSet2) >= 2) {
-                if (pointsTeamASet2 >= 21 && pointsTeamASet2 > pointsTeamBSet2) {
-                    teamASets++;
-                } else if (pointsTeamBSet2 >= 21 && pointsTeamBSet2 > pointsTeamASet2) {
-                    teamBSets++;
+                if (Math.abs(pointsTeamASet2 - pointsTeamBSet2) >= 2) {
+                    if (pointsTeamASet2 >= 21 && pointsTeamASet2 > pointsTeamBSet2) {
+                        teamASets++;
+                    } else if (pointsTeamBSet2 >= 21 && pointsTeamBSet2 > pointsTeamASet2) {
+                        teamBSets++;
+                    }
+                    if (Math.abs(pointsTeamASet3 - pointsTeamBSet3) >= 2) {
+                        if (pointsTeamASet3 >= 15 && pointsTeamASet3 > pointsTeamBSet3) {
+                            teamASets++;
+                        } else if (pointsTeamBSet3 >= 15 && pointsTeamBSet3 > pointsTeamASet3) {
+                            teamBSets++;
+                        }
+                    }
                 }
             }
-            if (Math.abs(pointsTeamASet3 - pointsTeamBSet3) >= 2) {
-                if (pointsTeamASet3 >= 15 && pointsTeamASet3 > pointsTeamBSet3) {
-                    teamASets++;
-                } else if (pointsTeamBSet3 >= 15 && pointsTeamBSet3 > pointsTeamASet3) {
-                    teamBSets++;
-                }
-            }
-
-            StringBuilder teamAScoreSB = new StringBuilder().append(teamASets);
-            if (pointsTeamASet1 > -1) {
-                teamAScoreSB.append(" (").append(pointsTeamASet1);
-                if (pointsTeamASet2 > -1) {
-                    teamAScoreSB.append(", ").append(pointsTeamASet2);
-                }
-                if (pointsTeamASet3 > -1) {
-                    teamAScoreSB.append(", ").append(pointsTeamASet3);
-                }
-                teamAScoreSB.append(")");
-            }
-            StringBuilder teamBScoreSB = new StringBuilder().append(teamBSets);
-            if (pointsTeamBSet1 > -1) {
-                teamBScoreSB.append(" (").append(pointsTeamBSet1);
-                if (pointsTeamBSet2 > -1) {
-                    teamBScoreSB.append(", ").append(pointsTeamBSet2);
-                }
-                if (pointsTeamBSet3 > -1) {
-                    teamBScoreSB.append(", ").append(pointsTeamBSet3);
-                }
-                teamBScoreSB.append(")");
-            }
-
-            holder.teamASetsView.setText(teamAScoreSB);
+            holder.teamASetsView.setText(String.valueOf(teamASets));
             holder.teamASetsView.setTextColor(textColor);
-            holder.teamBSetsView.setText(teamBScoreSB);
+            holder.teamBSetsView.setText(String.valueOf(teamBSets));
             holder.teamBSetsView.setTextColor(textColor);
+
+            StringBuilder setPointsSB = new StringBuilder();
+            if (pointsTeamASet1 > -1) {
+                setPointsSB.append(pointsTeamASet1).append("-").append(pointsTeamBSet1);
+                if (pointsTeamASet2 > -1) {
+                    setPointsSB.append("\n").append(pointsTeamASet2).append("-").append(pointsTeamBSet2);
+                    if (pointsTeamASet3 > -1) {
+                        setPointsSB.append("\n").append(pointsTeamASet3).append("-").append(pointsTeamBSet3);
+                    }
+                }
+            } else {
+                setPointsSB.append("21-14");
+                holder.setPointsView.setVisibility(View.INVISIBLE);
+            }
+
+            holder.setPointsView.setText(setPointsSB);
+            holder.setPointsView.setTextColor(textColor);
 
             StringBuilder eventInfo = new StringBuilder();
             eventInfo.append("Game #").append(match.getNoInTournament()).append(" | ");
@@ -200,6 +193,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         public TextView teamBView;
         public TextView teamASetsView;
         public TextView teamBSetsView;
+        public TextView setPointsView;
         public TextView infoView;
 
         public ItemViewHolder(View v) {
@@ -208,6 +202,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             teamBView = (TextView) v.findViewById(R.id.match_team_b);
             teamASetsView = (TextView) v.findViewById(R.id.match_team_a_sets);
             teamBSetsView = (TextView) v.findViewById(R.id.match_team_b_sets);
+            setPointsView = (TextView) v.findViewById(R.id.match_set_points);
             infoView = (TextView) v.findViewById(R.id.match_info);
             v.setOnClickListener(this);
         }

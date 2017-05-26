@@ -6,37 +6,51 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?selectableItemBackground">
-    <TextView
-        android:id="@+id/match_team_a"
-        android:layout_alignParentLeft="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-    <TextView
-        android:id="@+id/match_team_b"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/match_team_a"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-    <TextView
-        android:id="@+id/match_team_a_sets"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/match_team_a"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-    <TextView
-        android:id="@+id/match_team_b_sets"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/match_team_a_sets"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/match_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/match_team_a"
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/match_team_b"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/match_team_a"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/match_set_points"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="12sp" />
+        <TextView
+            android:id="@+id/match_team_a_sets"
+            android:layout_toLeftOf="@id/match_set_points"
+            android:layout_alignTop="@id/match_team_a"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/match_team_b_sets"
+            android:layout_toLeftOf="@id/match_set_points"
+            android:layout_below="@id/match_team_a_sets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </RelativeLayout>
     <TextView
         android:id="@+id/match_info"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/match_team_b"
+        android:layout_below="@id/match_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall" />
