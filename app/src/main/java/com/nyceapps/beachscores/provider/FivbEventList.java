@@ -4,7 +4,7 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import com.nyceapps.beachscores.entity.Event;
-import com.nyceapps.beachscores.util.FivbXmlUtils;
+import com.nyceapps.beachscores.util.FivbUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -40,7 +40,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     @Override
     protected List<Event> doInBackground(Void... params) {
-        String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", getBodyContent());
+        String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         List<Event> eventList = processXml(response);
         Collections.sort(eventList, new Comparator<Event>() {
@@ -167,10 +167,10 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
             reqVals.put("Fields", "NoEvent Name Title Status Type");
             for (String tourneyNo : pTourneyNos) {
                 reqVals.put("No", String.valueOf(tourneyNo));
-                tourneyReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, null));
+                tourneyReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
             }
-            String reqBody = FivbXmlUtils.getRequestString(tourneyReqs.toString());
-            String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", reqBody);
+            String reqBody = FivbUtils.getRequestString(tourneyReqs.toString());
+            String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", reqBody);
 
             Map<Long, Event> tourneyData = new HashMap<>();
             try {
@@ -298,7 +298,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         filtVals.put("FirstDate", String.valueOf(year) + "-01-01");
         filtVals.put("LastDate", String.valueOf(year) + "-12-31");
 
-        String requestBody = FivbXmlUtils.getRequestString(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+        String requestBody = FivbUtils.getRequestString(FivbUtils.getSingleRequestString(reqVals, filtVals));
         return requestBody;
     }
 }

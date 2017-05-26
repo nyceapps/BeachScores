@@ -54,7 +54,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         matchListView.addItemDecoration(dividerItemDecoration);
 
         List<Match> dummyMatchList = new ArrayList<>();
-        matchListAdapter = new MatchListAdapter(dummyMatchList, this);
+        matchListAdapter = new MatchListAdapter(dummyMatchList, this, this);
         matchListView.setAdapter(matchListAdapter);
 
         initializeDropdowns();
@@ -65,7 +65,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         progressDialog.setMessage("loading...");
         progressDialog.show();
 
-        FivbMatchList fivb = new FivbMatchList(this);
+        FivbMatchList fivb = new FivbMatchList(this, this);
         fivb.execute(event);
     }
 
@@ -85,10 +85,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (!loading) {
-                    /*
-                    String str = (String) parent.getItemAtPosition(position);
-                    Toast.makeText(MatchListActivity.this, str, Toast.LENGTH_LONG).show();
-                    */
                     updateMatchList();
                 }
             }
@@ -108,10 +104,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (!loading) {
-                    /*
-                    String str = (String) parent.getItemAtPosition(position);
-                    Toast.makeText(MatchListActivity.this, str, Toast.LENGTH_LONG).show();
-                    */
                     updateMatchList();
                 }
             }
@@ -138,11 +130,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         if (matchMap != null) {
             int currGender = genderSpinner.getSelectedItemPosition();
             int currPhase = 4 - phaseSpinner.getSelectedItemPosition();
-
-            /*
-            String str = currGender + " / " + currPhase;
-            Toast.makeText(this, str, Toast.LENGTH_LONG).show();
-            */
 
             List<Match> matchList = matchMap.getList(currGender, currPhase);
             matchListAdapter.updateList(matchList);

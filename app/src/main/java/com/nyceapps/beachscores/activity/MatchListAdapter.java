@@ -1,5 +1,7 @@
 package com.nyceapps.beachscores.activity;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,12 +28,14 @@ import java.util.Map;
 class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.HeaderViewHolder, MatchListAdapter.ItemViewHolder, MatchListAdapter.FooterViewHolder> {
     private List<Match> matchList;
     private ActivityDelegate delegate;
+    private final Context context;
     private List<String> matchSections;
     private Map<String, List<Match>> matchItems;
 
-    public MatchListAdapter(List<Match> pMatchList, ActivityDelegate pDelegate) {
+    public MatchListAdapter(List<Match> pMatchList, ActivityDelegate pDelegate, Context pContext) {
         matchList = pMatchList;
         delegate = pDelegate;
+        context = pContext;
     }
 
     @Override
@@ -72,8 +77,24 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         if (matchData != null) {
             Match match = matchData.get(position);
 
+            Date now = new Date();
+
+            // ResultType >= 0 for ended matches?
+            int textColor = ContextCompat.getColor(context, R.color.colorDark);
+            if (match.getLocalDate().before(now)) {
+                textColor = ContextCompat.getColor(context, R.color.colorLighter);
+            } else if (match.getLocalDate().after(now)) {
+                textColor = ContextCompat.getColor(context, R.color.colorDarker);
+            }
+
             holder.teamAView.setText(match.getTeamAName());
+            holder.teamAView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamAFederationFlag(), null, null, null);
+            holder.teamAView.setCompoundDrawablePadding(8);
+            holder.teamAView.setTextColor(textColor);
             holder.teamBView.setText(match.getTeamBName());
+            holder.teamBView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamBFederationFlag(), null, null, null);
+            holder.teamBView.setCompoundDrawablePadding(8);
+            holder.teamBView.setTextColor(textColor);
 
             int pointsTeamASet1 = match.getPointsTeamASet1();
             int pointsTeamASet2 = match.getPointsTeamASet2();
@@ -107,7 +128,9 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             }
 
             holder.teamASetsView.setText(String.valueOf(teamASets));
+            holder.teamASetsView.setTextColor(textColor);
             holder.teamBSetsView.setText(String.valueOf(teamBSets));
+            holder.teamBSetsView.setTextColor(textColor);
 
             StringBuilder eventInfo = new StringBuilder();
             eventInfo.append("Game #").append(match.getNoInTournament()).append(" | ");
@@ -120,6 +143,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                 eventInfo.append(" | ").append("Court ").append(court);
             }
             holder.infoView.setText(eventInfo.toString());
+            holder.infoView.setTextColor(textColor);
 
             holder.itemView.setTag(match);
         }

@@ -1,5 +1,8 @@
 package com.nyceapps.beachscores.entity;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -18,7 +21,11 @@ public class Match implements Parcelable {
     private int status;
     private Date localDate;
     private String teamAName;
+    private String teamAFederationCode;
+    private Drawable teamAFederationFlag;
     private String teamBName;
+    private String teamBFederationCode;
+    private Drawable teamBFederationFlag;
     private int court = -1;
     private int pointsTeamASet1 = -1;
     private int pointsTeamBSet1 = -1;
@@ -78,7 +85,7 @@ public class Match implements Parcelable {
     }
 
     public void setStatus(int pStatus) {
-        this.status = pStatus;
+        status = pStatus;
     }
 
     public Date getLocalDate() {
@@ -86,7 +93,7 @@ public class Match implements Parcelable {
     }
 
     public void setLocalDate(Date pLocalDate) {
-        this.localDate = pLocalDate;
+        localDate = pLocalDate;
     }
 
     public String getTeamAName() {
@@ -94,7 +101,23 @@ public class Match implements Parcelable {
     }
 
     public void setTeamAName(String pTeamAName) {
-        this.teamAName = pTeamAName;
+        teamAName = pTeamAName;
+    }
+
+    public String getTeamAFederationCode() {
+        return teamAFederationCode;
+    }
+
+    public void setTeamAFederationCode(String pTeamAFederationCode) {
+        teamAFederationCode = pTeamAFederationCode;
+    }
+
+    public Drawable getTeamAFederationFlag() {
+        return teamAFederationFlag;
+    }
+
+    public void setTeamAFederationFlag(Drawable pTeamAFederationFlag) {
+        teamAFederationFlag = pTeamAFederationFlag;
     }
 
     public String getTeamBName() {
@@ -102,7 +125,23 @@ public class Match implements Parcelable {
     }
 
     public void setTeamBName(String pTeamBName) {
-        this.teamBName = pTeamBName;
+        teamBName = pTeamBName;
+    }
+
+    public String getTeamBFederationCode() {
+        return teamBFederationCode;
+    }
+
+    public void setTeamBFederationCode(String pTeamBFederationCode) {
+        teamBFederationCode = pTeamBFederationCode;
+    }
+
+    public Drawable getTeamBFederationFlag() {
+        return teamBFederationFlag;
+    }
+
+    public void setTeamBFederationFlag(Drawable pTeamBFederationFlag) {
+        teamBFederationFlag = pTeamBFederationFlag;
     }
 
     public int getCourt() {

@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,11 +84,11 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
 
             Date now = new Date();
 
-            int textColor = ContextCompat.getColor(context, R.color.colorTextDark);
+            int textColor = ContextCompat.getColor(context, R.color.colorDark);
             if (event.getEndDate().before(now)) {
-                textColor = ContextCompat.getColor(context, R.color.colorTextLighter);
+                textColor = ContextCompat.getColor(context, R.color.colorLighter);
             } else if (event.getStartDate().after(now)) {
-                textColor = ContextCompat.getColor(context, R.color.colorTextDarker);
+                textColor = ContextCompat.getColor(context, R.color.colorDarker);
             }
 
             Drawable drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_dark);

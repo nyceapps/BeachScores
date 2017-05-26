@@ -1,12 +1,15 @@
 package com.nyceapps.beachscores.provider;
 
+import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
 import com.nyceapps.beachscores.entity.MatchMap;
-import com.nyceapps.beachscores.util.FivbXmlUtils;
+import com.nyceapps.beachscores.util.FivbUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -14,20 +17,14 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by lugosi on 21.05.17.
@@ -36,16 +33,20 @@ import java.util.Set;
 public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     private Event event;
     private MatchListResponse delegate;
+    private final Context context;
 
-    public FivbMatchList(MatchListResponse pDelegate) {
+    private Map<String, Drawable> fedFlagMap = new HashMap<>();
+
+    public FivbMatchList(MatchListResponse pDelegate, Context pContext) {
         delegate = pDelegate;
+        context = pContext;
     }
 
     @Override
     protected MatchMap doInBackground(Event... params) {
         event = params[0];
 
-        String response = ServiceUtils.getResponseString(FivbXmlUtils.getRequestBaseUrl(), "Request", getBodyContent());
+        String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         MatchMap matchMap = processXml(response);
         matchMap.sort();
@@ -110,8 +111,16 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                                 localTimeStr = attrValue;
                             } else if ("TeamAName".equals(attrName)) {
                                 match.setTeamAName(attrValue);
+                            } else if ("TeamAFederationCode".equals(attrName)) {
+                                match.setTeamAFederationCode(attrValue);
+                                Drawable federationDrawable = getFederationDrawable(attrValue);
+                                match.setTeamAFederationFlag(federationDrawable);
                             } else if ("TeamBName".equals(attrName)) {
                                 match.setTeamBName(attrValue);
+                            } else if ("TeamBFederationCode".equals(attrName)) {
+                                match.setTeamBFederationCode(attrValue);
+                                Drawable federationDrawable = getFederationDrawable(attrValue);
+                                match.setTeamBFederationFlag(federationDrawable);
                             } else if ("Court".equals(attrName)) {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                     int court = Integer.parseInt(attrValue);
@@ -194,6 +203,36 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         return matchMap;
     }
 
+    private Drawable getFederationDrawable(String pFederationCode) {
+        Drawable fedBitmap = null;
+
+        if (!TextUtils.isEmpty(pFederationCode)) {
+            fedBitmap = fedFlagMap.get(pFederationCode);
+
+            if (fedBitmap == null) {
+                String flagUrl = FivbUtils.getFederationFlagUrl(pFederationCode);
+                if (!TextUtils.isEmpty(flagUrl)) {
+                    InputStream in = null;
+                    try {
+                        in = new java.net.URL(flagUrl).openStream();
+                        fedBitmap = new BitmapDrawable(context.getResources(), in);
+                        fedFlagMap.put(pFederationCode, fedBitmap);
+                    } catch (Exception e) {
+                        if (in != null) {
+                            try {
+                                in.close();
+                            } catch (IOException e1) {
+                                //
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return fedBitmap;
+    }
+
     @Override
     protected void onPostExecute(MatchMap pMatchMap) {
         delegate.processMatchList(pMatchMap);
@@ -203,17 +242,17 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         StringBuilder matchListReqs = new StringBuilder();
         Map<String, String> reqVals = new HashMap<>();
         reqVals.put("Type", "GetBeachMatchList");
-        reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime TeamAName TeamBName Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
+        reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime TeamAName TeamAFederationCode TeamBName TeamBFederationCode Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
         Map<String, String> filtVals = new HashMap<>();
         if (event.hasWomenTournament()) {
             filtVals.put("NoTournament", String.valueOf(event.getWomenTournamentNo()));
-            matchListReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+            matchListReqs.append(FivbUtils.getSingleRequestString(reqVals, filtVals));
         }
         if (event.hasMenTournament()) {
             filtVals.put("NoTournament", String.valueOf(event.getMenTournamentNo()));
-            matchListReqs.append(FivbXmlUtils.getSingleRequestString(reqVals, filtVals));
+            matchListReqs.append(FivbUtils.getSingleRequestString(reqVals, filtVals));
         }
-        String requestBody = FivbXmlUtils.getRequestString(matchListReqs.toString());
+        String requestBody = FivbUtils.getRequestString(matchListReqs.toString());
         return requestBody;
     }
 }

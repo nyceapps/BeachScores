@@ -21,8 +21,11 @@ import java.util.Map;
  * Created by lugosi on 20.05.17.
  */
 
-public class FivbXmlUtils {
-    private FivbXmlUtils() {
+public class FivbUtils {
+    //private static String BASE_URL_FLAG_IMAGE = "http://www.fivb.org/images/flagssmall/%s.gif";
+    private static String BASE_URL_FLAG_IMAGE = "http://www.fivb.com/-/media/flags/flag_%s.png";
+
+    private FivbUtils() {
     }
 
     public static String getRequestBaseUrl() {
@@ -67,5 +70,9 @@ public class FivbXmlUtils {
         reqStr.append("</Requests>");
 
         return reqStr.toString();
+    }
+
+    public static String getFederationFlagUrl(String pFederationCode) {
+        return String.format(BASE_URL_FLAG_IMAGE, pFederationCode);
     }
 }
