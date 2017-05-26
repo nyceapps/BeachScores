@@ -127,9 +127,32 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                 }
             }
 
-            holder.teamASetsView.setText(String.valueOf(teamASets));
+            StringBuilder teamAScoreSB = new StringBuilder().append(teamASets);
+            if (pointsTeamASet1 > -1) {
+                teamAScoreSB.append(" (").append(pointsTeamASet1);
+                if (pointsTeamASet2 > -1) {
+                    teamAScoreSB.append(", ").append(pointsTeamASet2);
+                }
+                if (pointsTeamASet3 > -1) {
+                    teamAScoreSB.append(", ").append(pointsTeamASet3);
+                }
+                teamAScoreSB.append(")");
+            }
+            StringBuilder teamBScoreSB = new StringBuilder().append(teamBSets);
+            if (pointsTeamBSet1 > -1) {
+                teamBScoreSB.append(" (").append(pointsTeamBSet1);
+                if (pointsTeamBSet2 > -1) {
+                    teamBScoreSB.append(", ").append(pointsTeamBSet2);
+                }
+                if (pointsTeamBSet3 > -1) {
+                    teamBScoreSB.append(", ").append(pointsTeamBSet3);
+                }
+                teamBScoreSB.append(")");
+            }
+
+            holder.teamASetsView.setText(teamAScoreSB);
             holder.teamASetsView.setTextColor(textColor);
-            holder.teamBSetsView.setText(String.valueOf(teamBSets));
+            holder.teamBSetsView.setText(teamBScoreSB);
             holder.teamBSetsView.setTextColor(textColor);
 
             StringBuilder eventInfo = new StringBuilder();
