@@ -20,9 +20,11 @@ public class Match implements Parcelable {
     private int roundPhase = -1;
     private int status;
     private Date localDate;
+    private long noTeamA = -1;
     private String teamAName;
     private String teamAFederationCode;
     private Drawable teamAFederationFlag;
+    private long noTeamB = -1;
     private String teamBName;
     private String teamBFederationCode;
     private Drawable teamBFederationFlag;
@@ -96,6 +98,14 @@ public class Match implements Parcelable {
         localDate = pLocalDate;
     }
 
+    public long getNoTeamA() {
+        return noTeamA;
+    }
+
+    public void setNoTeamA(long pNoTeamA) {
+        noTeamA = pNoTeamA;
+    }
+
     public String getTeamAName() {
         return teamAName;
     }
@@ -118,6 +128,14 @@ public class Match implements Parcelable {
 
     public void setTeamAFederationFlag(Drawable pTeamAFederationFlag) {
         teamAFederationFlag = pTeamAFederationFlag;
+    }
+
+    public long getNoTeamB() {
+        return noTeamB;
+    }
+
+    public void setNoTeamB(long pNoTeamB) {
+        noTeamB = pNoTeamB;
     }
 
     public String getTeamBName() {

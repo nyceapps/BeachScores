@@ -3,6 +3,7 @@ package com.nyceapps.beachscores.activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,6 @@ import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,75 +77,89 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         if (matchData != null) {
             Match match = matchData.get(position);
 
-            Date now = new Date();
+            int status = match.getStatus();
 
-            // ResultType >= 0 for ended matches?
             int textColor = ContextCompat.getColor(context, R.color.colorDark);
-            if (match.getLocalDate().before(now)) {
+            if (status < 2) {
                 textColor = ContextCompat.getColor(context, R.color.colorLighter);
-            } else if (match.getLocalDate().after(now)) {
+            } else if (status >= 12) {
                 textColor = ContextCompat.getColor(context, R.color.colorDarker);
             }
 
-            holder.teamAView.setText(match.getTeamAName());
+            long noTeamA = match.getNoTeamA();
+            long noTeamB = match.getNoTeamB();
+            Log.i("TEAMNOS", String.valueOf(noTeamA) + "/" + String.valueOf(noTeamB));
+
+            String teamAName = (noTeamA == -1 ? "BYE" : match.getTeamAName());
+            holder.teamAView.setText(teamAName);
             holder.teamAView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamAFederationFlag(), null, null, null);
             holder.teamAView.setCompoundDrawablePadding(8);
             holder.teamAView.setTextColor(textColor);
-            holder.teamBView.setText(match.getTeamBName());
+            String teamBName = (noTeamB == -1 ? "BYE" : match.getTeamBName());
+            holder.teamBView.setText(teamBName);
             holder.teamBView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamBFederationFlag(), null, null, null);
             holder.teamBView.setCompoundDrawablePadding(8);
             holder.teamBView.setTextColor(textColor);
 
-            int pointsTeamASet1 = match.getPointsTeamASet1();
-            int pointsTeamASet2 = match.getPointsTeamASet2();
-            int pointsTeamASet3 = match.getPointsTeamASet3();
-            int pointsTeamBSet1 = match.getPointsTeamBSet1();
-            int pointsTeamBSet2 = match.getPointsTeamBSet2();
-            int pointsTeamBSet3 = match.getPointsTeamBSet3();
+            String teamASetsStr = "";
+            String teamBSetsStr = "";
+            String setPointsStr = "";
 
-            int teamASets = 0;
-            int teamBSets = 0;
-            if (Math.abs(pointsTeamASet1 - pointsTeamBSet1) >= 2) {
-                if (pointsTeamASet1 >= 21 && pointsTeamASet1 > pointsTeamBSet1) {
-                    teamASets++;
-                } else if (pointsTeamBSet1 >= 21 && pointsTeamBSet1 > pointsTeamASet1) {
-                    teamBSets++;
-                }
-                if (Math.abs(pointsTeamASet2 - pointsTeamBSet2) >= 2) {
-                    if (pointsTeamASet2 >= 21 && pointsTeamASet2 > pointsTeamBSet2) {
+            if (noTeamA > -1 && noTeamB > -1) {
+                int pointsTeamASet1 = match.getPointsTeamASet1();
+                int pointsTeamASet2 = match.getPointsTeamASet2();
+                int pointsTeamASet3 = match.getPointsTeamASet3();
+                int pointsTeamBSet1 = match.getPointsTeamBSet1();
+                int pointsTeamBSet2 = match.getPointsTeamBSet2();
+                int pointsTeamBSet3 = match.getPointsTeamBSet3();
+
+                int teamASets = 0;
+                int teamBSets = 0;
+
+                StringBuilder setPointsSB = new StringBuilder();
+
+                if (status >= 4 && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+                    if (pointsTeamASet1 > pointsTeamBSet1) {
                         teamASets++;
-                    } else if (pointsTeamBSet2 >= 21 && pointsTeamBSet2 > pointsTeamASet2) {
+                    } else {
                         teamBSets++;
                     }
-                    if (Math.abs(pointsTeamASet3 - pointsTeamBSet3) >= 2) {
-                        if (pointsTeamASet3 >= 15 && pointsTeamASet3 > pointsTeamBSet3) {
+                    if (status >= 6 && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                        if (pointsTeamASet2 > pointsTeamBSet2) {
                             teamASets++;
-                        } else if (pointsTeamBSet3 >= 15 && pointsTeamBSet3 > pointsTeamASet3) {
+                        } else {
                             teamBSets++;
+                        }
+                        if (status >= 8 && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                            if (pointsTeamASet3 > pointsTeamBSet3) {
+                                teamASets++;
+                            } else {
+                                teamBSets++;
+                            }
                         }
                     }
                 }
-            }
-            holder.teamASetsView.setText(String.valueOf(teamASets));
-            holder.teamASetsView.setTextColor(textColor);
-            holder.teamBSetsView.setText(String.valueOf(teamBSets));
-            holder.teamBSetsView.setTextColor(textColor);
-
-            StringBuilder setPointsSB = new StringBuilder();
-            if (pointsTeamASet1 > -1) {
-                setPointsSB.append(pointsTeamASet1).append("-").append(pointsTeamBSet1);
-                if (pointsTeamASet2 > -1) {
-                    setPointsSB.append("\n").append(pointsTeamASet2).append("-").append(pointsTeamBSet2);
-                    if (pointsTeamASet3 > -1) {
-                        setPointsSB.append("\n").append(pointsTeamASet3).append("-").append(pointsTeamBSet3);
+                teamASetsStr = String.valueOf(teamASets);
+                teamBSetsStr = String.valueOf(teamBSets);
+                if (status > 3 && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+                    setPointsSB.append(pointsTeamASet1).append("-").append(pointsTeamBSet1);
+                    if (status >= 5 && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                        setPointsSB.append("\n").append(pointsTeamASet2).append("-").append(pointsTeamBSet2);
+                        if (status >= 7 && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                            setPointsSB.append("\n").append(pointsTeamASet3).append("-").append(pointsTeamBSet3);
+                        }
                     }
                 }
+                setPointsStr = setPointsSB.toString();
             } else {
-                setPointsSB.append("21-14");
-                holder.setPointsView.setVisibility(View.INVISIBLE);
+                setPointsStr = "-----";
             }
 
-            holder.setPointsView.setText(setPointsSB);
+            holder.teamASetsView.setText(teamASetsStr);
+            holder.teamASetsView.setTextColor(textColor);
+            holder.teamBSetsView.setText(teamBSetsStr);
+            holder.teamBSetsView.setTextColor(textColor);
+            holder.setPointsView.setText(setPointsStr);
             holder.setPointsView.setTextColor(textColor);
 
             StringBuilder eventInfo = new StringBuilder();

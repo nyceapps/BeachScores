@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
@@ -109,12 +110,22 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                                 localDateStr = attrValue;
                             } else if ("LocalTime".equals(attrName)) {
                                 localTimeStr = attrValue;
+                            } else if ("NoTeamA".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    long noTeamA = Long.parseLong(attrValue);
+                                    match.setNoTeamA(noTeamA);
+                                }
                             } else if ("TeamAName".equals(attrName)) {
                                 match.setTeamAName(attrValue);
                             } else if ("TeamAFederationCode".equals(attrName)) {
                                 match.setTeamAFederationCode(attrValue);
                                 Drawable federationDrawable = getFederationDrawable(attrValue);
                                 match.setTeamAFederationFlag(federationDrawable);
+                            } else if ("NoTeamB".equals(attrName)) {
+                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
+                                    long noTeamB = Long.parseLong(attrValue);
+                                    match.setNoTeamB(noTeamB);
+                                }
                             } else if ("TeamBName".equals(attrName)) {
                                 match.setTeamBName(attrValue);
                             } else if ("TeamBFederationCode".equals(attrName)) {
@@ -242,7 +253,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         StringBuilder matchListReqs = new StringBuilder();
         Map<String, String> reqVals = new HashMap<>();
         reqVals.put("Type", "GetBeachMatchList");
-        reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime TeamAName TeamAFederationCode TeamBName TeamBFederationCode Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
+        reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime NoTeamA TeamAName TeamAFederationCode NoTeamB TeamBName TeamBFederationCode Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
         Map<String, String> filtVals = new HashMap<>();
         if (event.hasWomenTournament()) {
             filtVals.put("NoTournament", String.valueOf(event.getWomenTournamentNo()));
