@@ -2,6 +2,7 @@ package com.nyceapps.beachscores.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -31,6 +32,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private ProgressDialog progressDialog;
     private Spinner genderSpinner;
     private Spinner phaseSpinner;
+    private List<AsyncTask> matchUpdaters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +135,20 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
 
             List<Match> matchList = matchMap.getList(currGender, currPhase);
             matchListAdapter.updateList(matchList);
+
+            setupMatchUpdaters(matchList);
+        }
+    }
+
+    private void setupMatchUpdaters(List<Match> pMatchList) {
+        cancelMatchUpdaters();
+    }
+
+    private void cancelMatchUpdaters() {
+        for (AsyncTask matchUpdater : matchUpdaters) {
+            if (matchUpdater != null) {
+                matchUpdater.cancel(true);
+            }
         }
     }
 
