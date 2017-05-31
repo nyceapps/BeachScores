@@ -3,7 +3,6 @@ package com.nyceapps.beachscores.activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,14 +87,23 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
 
             long noTeamA = match.getNoTeamA();
             long noTeamB = match.getNoTeamB();
-            Log.i("TEAMNOS", String.valueOf(noTeamA) + "/" + String.valueOf(noTeamB));
 
-            String teamAName = (noTeamA == -1 ? "BYE" : match.getTeamAName());
+            String teamAName = match.getTeamAName();
+            if (noTeamA == -1) {
+                teamAName = "BYE";
+            } else if (noTeamA == 0) {
+                teamAName = "TBA";
+            }
             holder.teamAView.setText(teamAName);
             holder.teamAView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamAFederationFlag(), null, null, null);
             holder.teamAView.setCompoundDrawablePadding(8);
             holder.teamAView.setTextColor(textColor);
-            String teamBName = (noTeamB == -1 ? "BYE" : match.getTeamBName());
+            String teamBName = match.getTeamBName();
+            if (noTeamB == -1) {
+                teamBName = "BYE";
+            } else if (noTeamB == 0) {
+                teamBName = "TBA";
+            }
             holder.teamBView.setText(teamBName);
             holder.teamBView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamBFederationFlag(), null, null, null);
             holder.teamBView.setCompoundDrawablePadding(8);
@@ -151,8 +159,6 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                     }
                 }
                 setPointsStr = setPointsSB.toString();
-            } else {
-                setPointsStr = "-----";
             }
 
             holder.teamASetsView.setText(teamASetsStr);
