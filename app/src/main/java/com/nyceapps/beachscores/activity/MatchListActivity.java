@@ -2,8 +2,8 @@ package com.nyceapps.beachscores.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
@@ -23,6 +22,8 @@ import com.nyceapps.beachscores.provider.MatchListResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MatchListActivity extends AppCompatActivity implements ActivityDelegate, MatchListResponse {
     private Event event;
@@ -32,7 +33,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private ProgressDialog progressDialog;
     private Spinner genderSpinner;
     private Spinner phaseSpinner;
-    private List<AsyncTask> matchUpdaters;
+    private Timer updateTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +67,39 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("loading...");
         progressDialog.show();
+    }
 
-        FivbMatchList fivb = new FivbMatchList(this, this);
-        fivb.execute(event);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        setupUpdateTask();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (updateTimer != null) {
+            updateTimer.cancel();
+        }
+    }
+
+    private void setupUpdateTask() {
+        final Handler handler = new Handler();
+        updateTimer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this);
+                        fivb.execute(event);
+                    }
+                });
+            }
+        };
+        updateTimer.schedule(task, 0, 30 * 1000);
     }
 
     private void initializeDropdowns() {
@@ -115,6 +146,8 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
+
+        // TODO: Spinner for mytime / local time
     }
 
     @Override
@@ -136,19 +169,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             List<Match> matchList = matchMap.getList(currGender, currPhase);
             matchListAdapter.updateList(matchList);
 
-            setupMatchUpdaters(matchList);
-        }
-    }
-
-    private void setupMatchUpdaters(List<Match> pMatchList) {
-        cancelMatchUpdaters();
-    }
-
-    private void cancelMatchUpdaters() {
-        for (AsyncTask matchUpdater : matchUpdaters) {
-            if (matchUpdater != null) {
-                matchUpdater.cancel(true);
-            }
+            // TODO: cancel timer when all games are finished
         }
     }
 

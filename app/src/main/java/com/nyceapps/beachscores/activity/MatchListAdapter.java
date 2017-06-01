@@ -25,6 +25,8 @@ import java.util.Map;
  */
 
 class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.HeaderViewHolder, MatchListAdapter.ItemViewHolder, MatchListAdapter.FooterViewHolder> {
+    private final static String TAG = MatchListAdapter.class.getSimpleName();
+
     private List<Match> matchList;
     private ActivityDelegate delegate;
     private final Context context;
@@ -79,9 +81,9 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             int status = match.getStatus();
 
             int textColor = ContextCompat.getColor(context, R.color.colorDark);
-            if (status < 2) {
+            if (status >= 12) {
                 textColor = ContextCompat.getColor(context, R.color.colorLighter);
-            } else if (status >= 12) {
+            } else if (status < 2) {
                 textColor = ContextCompat.getColor(context, R.color.colorDarker);
             }
 

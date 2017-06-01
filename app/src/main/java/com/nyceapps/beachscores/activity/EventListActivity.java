@@ -2,8 +2,8 @@ package com.nyceapps.beachscores.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,13 +11,15 @@ import android.view.View;
 
 import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
-import com.nyceapps.beachscores.provider.FivbEventList;
 import com.nyceapps.beachscores.provider.EventListResponse;
+import com.nyceapps.beachscores.provider.FivbEventList;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class EventListActivity extends AppCompatActivity implements ActivityDelegate, EventListResponse {
+    private LinearLayoutManager eventListLayoutManager;
     private EventListAdapter eventListAdapter;
     private ProgressDialog progressDialog;
 
@@ -31,7 +33,7 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
 
         eventListView.setHasFixedSize(true);
 
-        LinearLayoutManager eventListLayoutManager = new LinearLayoutManager(this);
+        eventListLayoutManager = new LinearLayoutManager(this);
         eventListView.setLayoutManager(eventListLayoutManager);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(eventListView.getContext(), eventListLayoutManager.getOrientation());
@@ -53,6 +55,30 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
     public void processEventList(List<Event> pEventList) {
         eventListAdapter.updateList(pEventList);
         progressDialog.dismiss();
+
+        int nextEventPos = getNextEventPosition(pEventList);
+        eventListLayoutManager.scrollToPositionWithOffset(nextEventPos, 0 );
+    }
+
+    private int getNextEventPosition(List<Event> pEventList) {
+        // TODO: consider header in position count
+        int nextEventPos =  0;
+
+        Date now = new Date();
+        for (int i = 0; i < pEventList.size(); i++) {
+            Event event = pEventList.get(i);
+            Date startDate = event.getStartDate();
+            Date endDate = event.getEndDate();
+            if (now.before(startDate)) {
+                nextEventPos = i;
+            }
+            if (now.after(startDate) && now.before(endDate)) {
+                nextEventPos = i;
+                break;
+            }
+        }
+
+        return nextEventPos;
     }
 
     @Override
