@@ -56,6 +56,11 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
 
     private MatchMap processXml(String pResponse) {
         MatchMap matchMap = new MatchMap();
+
+        if (TextUtils.isEmpty(pResponse)) {
+            return matchMap;
+        }
+
         int currGender = -1;
         int currPhase = -1;
 

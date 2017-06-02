@@ -54,6 +54,11 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     private List<Event> processXml(String pResponse) {
         List<Event> eventList = new ArrayList<>();
+
+        if (TextUtils.isEmpty(pResponse)) {
+            return eventList;
+        }
+
         Set<String> tourneyNos = new HashSet<>();
 
         try {
