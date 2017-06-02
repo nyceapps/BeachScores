@@ -156,7 +156,9 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
 
         updateMatchList();
 
-        progressDialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
 
         loading = false;
     }
