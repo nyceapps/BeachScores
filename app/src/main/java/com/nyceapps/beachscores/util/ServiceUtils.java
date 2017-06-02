@@ -1,5 +1,7 @@
 package com.nyceapps.beachscores.util;
 
+import android.text.TextUtils;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,11 +19,10 @@ public class ServiceUtils {
     private ServiceUtils() {
     }
 
-    public static String getResponseString(String pBaseUrl, String pBodyName, String pBodyContent) {
+    public static String getPostResponseString(String pBaseUrl, String pBodyName, String pBodyContent) {
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(pBaseUrl);
-            String urlParameters = URLEncoder.encode(pBodyName, "UTF-8") + "=" + URLEncoder.encode(pBodyContent, "UTF-8");
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setReadTimeout(10000);
@@ -31,10 +32,13 @@ public class ServiceUtils {
             urlConnection.setDoOutput(true);
             urlConnection.setChunkedStreamingMode(0);
 
-            DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
-            wr.writeBytes(urlParameters);
-            wr.flush();
-            wr.close();
+            if (!TextUtils.isEmpty(pBodyName) && !TextUtils.isEmpty(pBodyContent)) {
+                String urlParameters = URLEncoder.encode(pBodyName, "UTF-8") + "=" + URLEncoder.encode(pBodyContent, "UTF-8");
+                DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
+                wr.writeBytes(urlParameters);
+                wr.flush();
+                wr.close();
+            }
 
             InputStream is = urlConnection.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));

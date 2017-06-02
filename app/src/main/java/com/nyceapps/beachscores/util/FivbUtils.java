@@ -22,8 +22,8 @@ import java.util.Map;
  */
 
 public class FivbUtils {
-    //private static String BASE_URL_FLAG_IMAGE = "http://www.fivb.org/images/flagssmall/%s.gif";
-    private static String BASE_URL_FLAG_IMAGE = "http://www.fivb.com/-/media/flags/flag_%s.png";
+    //private final static String BASE_URL_FLAG_IMAGE = "http://www.fivb.org/images/flagssmall/%s.gif";
+    private final static String BASE_URL_FLAG_IMAGE = "http://www.fivb.com/-/media/flags/flag_%s.png";
 
     private FivbUtils() {
     }

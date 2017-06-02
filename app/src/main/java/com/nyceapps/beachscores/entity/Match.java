@@ -18,6 +18,7 @@ public class Match implements Parcelable {
     private int roundPhase = -1;
     private int status;
     private Date localDate;
+    private Date myDate;
     private long noTeamA = -1;
     private String teamAName;
     private String teamAFederationCode;
@@ -94,6 +95,14 @@ public class Match implements Parcelable {
 
     public void setLocalDate(Date pLocalDate) {
         localDate = pLocalDate;
+    }
+
+    public Date getMyDate() {
+        return myDate;
+    }
+
+    public void setMyDate(Date pMyDate) {
+        myDate = pMyDate;
     }
 
     public long getNoTeamA() {

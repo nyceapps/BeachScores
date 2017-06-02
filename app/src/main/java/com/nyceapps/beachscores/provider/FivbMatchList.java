@@ -5,12 +5,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
 import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.util.FivbUtils;
+import com.nyceapps.beachscores.util.GeoUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -23,9 +23,11 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by lugosi on 21.05.17.
@@ -33,9 +35,9 @@ import java.util.Map;
 
 public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     private Event event;
+    private TimeZone eventTimeZone;
     private MatchListResponse delegate;
     private final Context context;
-
     private Map<String, Drawable> fedFlagMap = new HashMap<>();
 
     public FivbMatchList(MatchListResponse pDelegate, Context pContext) {
@@ -47,7 +49,9 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     protected MatchMap doInBackground(Event... params) {
         event = params[0];
 
-        String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
+        eventTimeZone = GeoUtils.getTimeZoneForCityAndCountryCode(event.getName(), event.getCountryCode());
+
+        String response = ServiceUtils.getPostResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         MatchMap matchMap = processXml(response);
         matchMap.sort();
@@ -200,6 +204,13 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                             try {
                                 Date localDate = df.parse(localDateTimeStr);
                                 match.setLocalDate(localDate);
+                                if (eventTimeZone != null) {
+                                    Calendar myCal = Calendar.getInstance(eventTimeZone);
+                                    myCal.setTime(localDate);
+                                    myCal.setTimeZone(TimeZone.getDefault());
+                                    Date myDate = myCal.getTime();
+                                    match.setMyDate(myDate);
+                                }
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }

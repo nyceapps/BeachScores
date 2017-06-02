@@ -40,7 +40,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     @Override
     protected List<Event> doInBackground(Void... params) {
-        String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
+        String response = ServiceUtils.getPostResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         List<Event> eventList = processXml(response);
         Collections.sort(eventList, new Comparator<Event>() {
@@ -82,6 +82,8 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 }
                             } else if ("Code".equals(attrName)) {
                                 event.setCode(attrValue);
+                            } else if ("CountryCode".equals(attrName)) {
+                                event.setCountryCode(attrValue);
                             } else if ("Name".equals(attrName)) {
                                 event.setName(attrValue);
                             } else if ("StartDate".equals(attrName)) {
@@ -175,7 +177,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                 tourneyReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
             }
             String reqBody = FivbUtils.getRequestString(tourneyReqs.toString());
-            String response = ServiceUtils.getResponseString(FivbUtils.getRequestBaseUrl(), "Request", reqBody);
+            String response = ServiceUtils.getPostResponseString(FivbUtils.getRequestBaseUrl(), "Request", reqBody);
 
             Map<Long, Event> tourneyData = new HashMap<>();
             try {
@@ -295,7 +297,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     private String getBodyContent() {
         Map<String, String> reqVals = new HashMap<>();
         reqVals.put("Type", "GetEventList");
-        reqVals.put("Fields", "No Code Name StartDate EndDate Content");
+        reqVals.put("Fields", "No Code CountryCode Name StartDate EndDate Content");
         Map<String, String> filtVals = new HashMap<>();
         filtVals.put("IsVisManaged", "true");
         filtVals.put("HasBeachTournament", "true");

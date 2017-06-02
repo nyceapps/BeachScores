@@ -14,6 +14,7 @@ public class Event implements Parcelable {
     private int status;
     private long no;
     private String code;
+    private String countryCode;
     private String name;
     private String title;
     private Date startDate;
@@ -55,6 +56,14 @@ public class Event implements Parcelable {
 
     public void setCode(String pCode) {
         code = pCode;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String pCountryCode) {
+        countryCode = pCountryCode;
     }
 
     public String getName() {
@@ -132,6 +141,7 @@ public class Event implements Parcelable {
         out.writeInt(status);
         out.writeLong(no);
         out.writeString(code);
+        out.writeString(countryCode);
         out.writeString(name);
         out.writeString(title);
         out.writeLong(startDate.getTime());
@@ -155,6 +165,7 @@ public class Event implements Parcelable {
         status = in.readInt();
         no = in.readLong();
         code = in.readString();
+        countryCode = in.readString();
         name = in.readString();
         title = in.readString();
         startDate = new Date(in.readLong());
