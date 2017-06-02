@@ -49,7 +49,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     protected MatchMap doInBackground(Event... params) {
         event = params[0];
 
-        eventTimeZone = GeoUtils.getTimeZoneForCityAndCountryCode(event.getName(), event.getCountryCode());
+        eventTimeZone = event.getTimeZone();
         eventDateFormatter = null;
         if (eventTimeZone != null) {
             eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(eventTimeZone);

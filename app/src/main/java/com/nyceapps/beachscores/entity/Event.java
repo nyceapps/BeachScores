@@ -3,6 +3,8 @@ package com.nyceapps.beachscores.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.joda.time.DateTimeZone;
+
 import java.util.Date;
 
 /**
@@ -15,6 +17,8 @@ public class Event implements Parcelable {
     private long no;
     private String code;
     private String countryCode;
+    private String location;
+    private DateTimeZone timeZone;
     private String name;
     private String title;
     private Date startDate;
@@ -64,6 +68,22 @@ public class Event implements Parcelable {
 
     public void setCountryCode(String pCountryCode) {
         countryCode = pCountryCode;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String pLocation) {
+        location = pLocation;
+    }
+
+    public DateTimeZone getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(DateTimeZone pTimeZone) {
+        timeZone = pTimeZone;
     }
 
     public String getName() {
@@ -142,6 +162,8 @@ public class Event implements Parcelable {
         out.writeLong(no);
         out.writeString(code);
         out.writeString(countryCode);
+        out.writeString(location);
+        out.writeValue(timeZone);
         out.writeString(name);
         out.writeString(title);
         out.writeLong(startDate.getTime());
@@ -166,6 +188,8 @@ public class Event implements Parcelable {
         no = in.readLong();
         code = in.readString();
         countryCode = in.readString();
+        location = in.readString();
+        timeZone = (DateTimeZone) in.readValue(getClass().getClassLoader());
         name = in.readString();
         title = in.readString();
         startDate = new Date(in.readLong());

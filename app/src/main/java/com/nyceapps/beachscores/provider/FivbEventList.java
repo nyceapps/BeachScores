@@ -1,12 +1,16 @@
 package com.nyceapps.beachscores.provider;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.util.FivbUtils;
+import com.nyceapps.beachscores.util.GeoUtils;
+import com.nyceapps.beachscores.util.PreferencesUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
+import org.joda.time.DateTimeZone;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -33,9 +37,11 @@ import java.util.Set;
 
 public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
     private EventListResponse delegate;
+    private final Context context;
 
-    public FivbEventList(EventListResponse pDelegate) {
+    public FivbEventList(EventListResponse pDelegate, Context pContext) {
         delegate = pDelegate;
+        context = pContext;
     }
 
     @Override
@@ -106,6 +112,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 processTournamentData(event, attrValue, tourneyNos);
                             }
                         }
+
                         eventList.add(event);
                     }
                 }
@@ -233,11 +240,26 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                 e.printStackTrace();
             }
 
+            Map<String, DateTimeZone> timeZones = PreferencesUtils.getTimeZones(context);
+            boolean hasNewTimeZone = false;
+
             for (int i = pEventList.size() - 1; i >= 0; i--) {
                 Event mainEvent = pEventList.get(i);
                 Event tourneyEvent = tourneyData.get(mainEvent.getNo());
                 if (tourneyEvent != null) {
                     mainEvent.setName(tourneyEvent.getName());
+                    mainEvent.setLocation(tourneyEvent.getName());
+                    String timeZoneKey = mainEvent.getCountryCode() + "|" + mainEvent.getLocation();
+                    DateTimeZone timeZone = timeZones.get(timeZoneKey);
+                    if (timeZone == null) {
+                        timeZone = GeoUtils.getTimeZoneForCityAndCountryCode(mainEvent.getLocation(), mainEvent.getCountryCode());
+                        if (timeZone != null) {
+                            hasNewTimeZone = true;
+                            timeZones.put(timeZoneKey, timeZone);
+                        }
+                    }
+                    mainEvent.setTimeZone(timeZone);
+
                     mainEvent.setTitle(tourneyEvent.getTitle());
                     mainEvent.setType(tourneyEvent.getType());
                     mainEvent.setStatus(tourneyEvent.getStatus());
@@ -246,6 +268,10 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                 } else {
                     pEventList.remove(i);
                 }
+            }
+
+            if (hasNewTimeZone) {
+                PreferencesUtils.setTimeZones(timeZones, context);
             }
         }
     }
