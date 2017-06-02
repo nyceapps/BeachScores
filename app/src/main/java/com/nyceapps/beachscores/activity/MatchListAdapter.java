@@ -12,12 +12,13 @@ import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Match;
 import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,6 +33,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
     private final Context context;
     private List<String> matchSections;
     private Map<String, List<Match>> matchItems;
+    private String timeDisplayType;
 
     public MatchListAdapter(List<Match> pMatchList, ActivityDelegate pDelegate, Context pContext) {
         matchList = pMatchList;
@@ -172,9 +174,13 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
 
             StringBuilder eventInfo = new StringBuilder();
             eventInfo.append("Game #").append(match.getNoInTournament()).append(" | ");
-            String localDayStr = getLocalDayString(match);
+            DateTime gameDateTime = match.getLocalDateTime();
+            if (MatchListActivity.TIME_DISPLAY_TYPE_MY.equals(timeDisplayType)) {
+                gameDateTime = match.getMyDateTime();
+            }
+            String localDayStr = getGameDayString(gameDateTime);
             eventInfo.append(localDayStr).append(" ");
-            String localTimeStr = getLocalTimeString(match);
+            String localTimeStr = getGameTimeString(gameDateTime);
             eventInfo.append(localTimeStr);
             int court = match.getCourt();
             if (court > -1) {
@@ -187,14 +193,14 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         }
     }
 
-    private String getLocalDayString(Match match) {
-        DateFormat dfDay = new SimpleDateFormat("EEEE");
-        return dfDay.format(match.getLocalDate());
+    private String getGameDayString(DateTime pGameDateTime) {
+        DateTimeFormatter dtfDay = DateTimeFormat.forPattern("EEEE");
+        return dtfDay.print(pGameDateTime);
     }
 
-    private String getLocalTimeString(Match match) {
-        DateFormat dfTime = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
-        return dfTime.format(match.getLocalDate());
+    private String getGameTimeString(DateTime pGameDateTime) {
+        DateTimeFormatter dtfTime = DateTimeFormat.shortTime();
+        return dtfTime.print(pGameDateTime);
     }
 
     @Override
@@ -241,7 +247,8 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         }
     }
 
-    public void updateList(List<Match> pMatchList) {
+    public void updateList(List<Match> pMatchList, String pTimeDisplayType) {
+        timeDisplayType = pTimeDisplayType;
         if (pMatchList.size() != matchList.size() || !matchList.containsAll(pMatchList)) {
             prepareSectionData(pMatchList);
             matchList = pMatchList;

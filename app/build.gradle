@@ -29,5 +29,7 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     // SectionedRecyclerView
     compile 'com.truizlop.sectionedrecyclerview:library:1.2.0'
+    // Joda Time
+    compile 'joda-time:joda-time:2.9.4'
     testCompile 'junit:junit:4.12'
 }

@@ -13,6 +13,10 @@ import com.nyceapps.beachscores.util.FivbUtils;
 import com.nyceapps.beachscores.util.GeoUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -20,14 +24,8 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Created by lugosi on 21.05.17.
@@ -35,7 +33,9 @@ import java.util.TimeZone;
 
 public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     private Event event;
-    private TimeZone eventTimeZone;
+    private DateTimeZone eventTimeZone;
+    private DateTimeFormatter eventDateFormatter;
+    private DateTimeZone myTimeZone;
     private MatchListResponse delegate;
     private final Context context;
     private Map<String, Drawable> fedFlagMap = new HashMap<>();
@@ -50,6 +50,13 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         event = params[0];
 
         eventTimeZone = GeoUtils.getTimeZoneForCityAndCountryCode(event.getName(), event.getCountryCode());
+        eventDateFormatter = null;
+        if (eventTimeZone != null) {
+            eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(eventTimeZone);
+        } else {
+            eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(eventTimeZone);
+        }
+        myTimeZone = DateTimeZone.getDefault();
 
         String response = ServiceUtils.getPostResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
@@ -200,20 +207,17 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                             } else {
                                 localDateTimeStr += "00:00:00";
                             }
-                            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            try {
-                                Date localDate = df.parse(localDateTimeStr);
-                                match.setLocalDate(localDate);
-                                if (eventTimeZone != null) {
-                                    Calendar myCal = Calendar.getInstance(eventTimeZone);
-                                    myCal.setTime(localDate);
-                                    myCal.setTimeZone(TimeZone.getDefault());
-                                    Date myDate = myCal.getTime();
-                                    match.setMyDate(myDate);
-                                }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+
+                            DateTime localDateTime = DateTime.parse(localDateTimeStr, eventDateFormatter);
+                            DateTime myDateTime = null;
+                            if (eventTimeZone != null) {
+                                myDateTime = localDateTime.toDateTime(myTimeZone);
                             }
+                            if (myDateTime != null) {
+                                match.setMyDateTime(null);
+                            }
+                            match.setLocalDateTime(localDateTime);
+                            match.setMyDateTime(myDateTime);
                         }
 
                         matchMap.put(currGender, currPhase, match);

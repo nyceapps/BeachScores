@@ -4,6 +4,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.joda.time.DateTime;
+
 import java.util.Date;
 
 /**
@@ -17,8 +19,8 @@ public class Match implements Parcelable {
     private String roundName;
     private int roundPhase = -1;
     private int status;
-    private Date localDate;
-    private Date myDate;
+    private DateTime localDateTime;
+    private DateTime myDateTime;
     private long noTeamA = -1;
     private String teamAName;
     private String teamAFederationCode;
@@ -89,20 +91,20 @@ public class Match implements Parcelable {
         status = pStatus;
     }
 
-    public Date getLocalDate() {
-        return localDate;
+    public DateTime getLocalDateTime() {
+        return localDateTime;
     }
 
-    public void setLocalDate(Date pLocalDate) {
-        localDate = pLocalDate;
+    public void setLocalDateTime(DateTime pLocalDateTime) {
+        localDateTime = pLocalDateTime;
     }
 
-    public Date getMyDate() {
-        return myDate;
+    public DateTime getMyDateTime() {
+        return myDateTime;
     }
 
-    public void setMyDate(Date pMyDate) {
-        myDate = pMyDate;
+    public void setMyDateTime(DateTime pMyDateTime) {
+        myDateTime = pMyDateTime;
     }
 
     public long getNoTeamA() {
@@ -262,7 +264,7 @@ public class Match implements Parcelable {
         out.writeString(roundName);
         out.writeInt(roundPhase);
         out.writeInt(status);
-        out.writeLong(localDate.getTime());
+        out.writeValue(localDateTime);
         out.writeString(teamAName);
         out.writeString(teamBName);
         out.writeInt(court);
@@ -294,7 +296,7 @@ public class Match implements Parcelable {
         roundName = in.readString();
         roundPhase = in.readInt();
         status = in.readInt();
-        localDate = new Date(in.readLong());
+        localDateTime = (DateTime) in.readValue(getClass().getClassLoader());
         teamAName = in.readString();
         teamBName = in.readString();
         court = in.readInt();

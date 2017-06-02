@@ -26,6 +26,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MatchListActivity extends AppCompatActivity implements ActivityDelegate, MatchListResponse {
+    public final static String TIME_DISPLAY_TYPE_LOCAL = "LOCAL";
+    public final static String TIME_DISPLAY_TYPE_MY = "MY";
+
     private Event event;
     private MatchMap matchMap;
     private MatchListAdapter matchListAdapter;
@@ -33,6 +36,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private ProgressDialog progressDialog;
     private Spinner genderSpinner;
     private Spinner phaseSpinner;
+    private Spinner timeSpinner;
     private Timer updateTimer;
 
     @Override
@@ -112,7 +116,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         if (event.hasMenTournament()) {
             genderItems.add("Men's");
         }
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, genderItems);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, genderItems);
         genderSpinner.setAdapter(genderAdapter);
         genderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -131,7 +135,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         phaseSpinner = (Spinner) findViewById(R.id.phase_dropdown);
 
         String[] phaseItems = { "Main draw", "Qualification", "Country quota" };
-        ArrayAdapter<String> phaseAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, phaseItems);
+        ArrayAdapter<String> phaseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, phaseItems);
         phaseSpinner.setAdapter(phaseAdapter);
         phaseSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -147,7 +151,24 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             }
         });
 
-        // TODO: Spinner for mytime / local time
+        timeSpinner = (Spinner) findViewById(R.id.time_dropdown);
+
+        String[] timeItems = { "Local time", "My time" };
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, timeItems);
+        timeSpinner.setAdapter(timeAdapter);
+        timeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!loading) {
+                    updateMatchList();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO Auto-generated method stub
+            }
+        });
     }
 
     @Override
@@ -167,9 +188,14 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         if (matchMap != null) {
             int currGender = genderSpinner.getSelectedItemPosition();
             int currPhase = 4 - phaseSpinner.getSelectedItemPosition();
+            int currTime = timeSpinner.getSelectedItemPosition();
+            String currTimeDisplayType = TIME_DISPLAY_TYPE_LOCAL;
+            if (currTime == 1) {
+                currTimeDisplayType = TIME_DISPLAY_TYPE_MY;
+            }
 
             List<Match> matchList = matchMap.getList(currGender, currPhase);
-            matchListAdapter.updateList(matchList);
+            matchListAdapter.updateList(matchList, currTimeDisplayType);
 
             // TODO: cancel timer when all games are finished
         }

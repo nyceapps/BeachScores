@@ -2,6 +2,7 @@ package com.nyceapps.beachscores.util;
 
 import android.text.TextUtils;
 
+import org.joda.time.DateTimeZone;
 import org.xml.sax.InputSource;
 
 import java.io.StringReader;
@@ -22,7 +23,7 @@ public class GeoUtils {
     private GeoUtils() {
     }
 
-    public static TimeZone getTimeZoneForCityAndCountryCode(String pCity, String pCountryCode) {
+    public static DateTimeZone getTimeZoneForCityAndCountryCode(String pCity, String pCountryCode) {
         if (!TextUtils.isEmpty(pCity) && !TextUtils.isEmpty(pCountryCode)) {
             String latLngUrl = String.format(BASE_URL_LAT_LNG, pCity, pCountryCode);
             String latLngResponse = ServiceUtils.getPostResponseString(latLngUrl, null, null);
@@ -44,7 +45,7 @@ public class GeoUtils {
                             InputSource timezoneIS = new InputSource(new StringReader(timeZoneResponse));
                             String timeZoneId = timeZoneXpath.evaluate(timeZoneExpr, timezoneIS);
                             if (!TextUtils.isEmpty(timeZoneId)) {
-                                return TimeZone.getTimeZone(timeZoneId);
+                                return DateTimeZone.forID(timeZoneId);
                             }
                         }
                     }
