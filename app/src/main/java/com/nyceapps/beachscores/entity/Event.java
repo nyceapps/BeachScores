@@ -12,8 +12,6 @@ import java.util.Date;
  */
 
 public class Event implements Parcelable {
-    private int type;
-    private int status;
     private long no;
     private String code;
     private String countryCode;
@@ -28,22 +26,6 @@ public class Event implements Parcelable {
     private int value = -1;
 
     public Event() {
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int pType) {
-        type = pType;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int pStatus) {
-        status = pStatus;
     }
 
     public long getNo() {
@@ -157,8 +139,6 @@ public class Event implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(type);
-        out.writeInt(status);
         out.writeLong(no);
         out.writeString(code);
         out.writeString(countryCode);
@@ -183,8 +163,6 @@ public class Event implements Parcelable {
     };
 
     public Event(Parcel in) {
-        type = in.readInt();
-        status = in.readInt();
         no = in.readLong();
         code = in.readString();
         countryCode = in.readString();

@@ -3,6 +3,7 @@ package com.nyceapps.beachscores.activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,12 +81,12 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         if (matchData != null) {
             Match match = matchData.get(position);
 
-            int status = match.getStatus();
+            //int status = match.getStatus();
 
             int textColor = ContextCompat.getColor(context, R.color.colorDark);
-            if (status >= 12) {
+            if (match.isFinished()) {
                 textColor = ContextCompat.getColor(context, R.color.colorLighter);
-            } else if (status < 2) {
+            } else if (match.isScheduled()) {
                 textColor = ContextCompat.getColor(context, R.color.colorDarker);
             }
 
@@ -130,19 +131,19 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
 
                 StringBuilder setPointsSB = new StringBuilder();
 
-                if (status >= 4 && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+                if (match.isSet1Finished() && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
                     if (pointsTeamASet1 > pointsTeamBSet1) {
                         teamASets++;
                     } else {
                         teamBSets++;
                     }
-                    if (status >= 6 && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                    if (match.isSet2Finished() && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
                         if (pointsTeamASet2 > pointsTeamBSet2) {
                             teamASets++;
                         } else {
                             teamBSets++;
                         }
-                        if (status >= 8 && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                        if (match.isSet3Finished() && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
                             if (pointsTeamASet3 > pointsTeamBSet3) {
                                 teamASets++;
                             } else {
@@ -153,11 +154,11 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                 }
                 teamASetsStr = String.valueOf(teamASets);
                 teamBSetsStr = String.valueOf(teamBSets);
-                if (status > 3 && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+                if ((match.isSet1Running() || match.isSet1Finished()) && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
                     setPointsSB.append(pointsTeamASet1).append("-").append(pointsTeamBSet1);
-                    if (status >= 5 && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                    if ((match.isSet2Running() || match.isSet2Finished()) && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
                         setPointsSB.append("\n").append(pointsTeamASet2).append("-").append(pointsTeamBSet2);
-                        if (status >= 7 && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                        if ((match.isSet3running() || match.isSet3Finished()) && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
                             setPointsSB.append("\n").append(pointsTeamASet3).append("-").append(pointsTeamBSet3);
                         }
                     }
@@ -182,9 +183,13 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             eventInfo.append(localDayStr).append(" ");
             String localTimeStr = getGameTimeString(gameDateTime);
             eventInfo.append(localTimeStr);
-            int court = match.getCourt();
-            if (court > -1) {
-                eventInfo.append(" | ").append("Court ").append(court);
+            String court = match.getCourt();
+            if (!TextUtils.isEmpty(court)) {
+                eventInfo.append(" | ");
+                if (TextUtils.isDigitsOnly(court)) {
+                    eventInfo.append("Court ");
+                }
+                eventInfo.append(court);
             }
             holder.infoView.setText(eventInfo.toString());
             holder.infoView.setTextColor(textColor);

@@ -6,8 +6,6 @@ import android.os.Parcelable;
 
 import org.joda.time.DateTime;
 
-import java.util.Date;
-
 /**
  * Created by lugosi on 21.05.17.
  */
@@ -18,7 +16,15 @@ public class Match implements Parcelable {
     private int noInTournament;
     private String roundName;
     private int roundPhase = -1;
-    private int status;
+    private boolean scheduled = false;
+    private boolean running = false;
+    private boolean finished = false;
+    private boolean set1Running = false;
+    private boolean set1Finished = false;
+    private boolean set2Running = false;
+    private boolean set2Finished = false;
+    private boolean set3running = false;
+    private boolean set3Finished = false;
     private DateTime localDateTime;
     private DateTime myDateTime;
     private long noTeamA = -1;
@@ -29,7 +35,7 @@ public class Match implements Parcelable {
     private String teamBName;
     private String teamBFederationCode;
     private Drawable teamBFederationFlag;
-    private int court = -1;
+    private String court;
     private int pointsTeamASet1 = -1;
     private int pointsTeamBSet1 = -1;
     private int pointsTeamASet2 = -1;
@@ -83,12 +89,76 @@ public class Match implements Parcelable {
         roundPhase = pRoundPhase;
     }
 
-    public int getStatus() {
-        return status;
+    public boolean isScheduled() {
+        return scheduled;
     }
 
-    public void setStatus(int pStatus) {
-        status = pStatus;
+    public void setScheduled(boolean pScheduled) {
+        scheduled = pScheduled;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean pRunning) {
+        running = pRunning;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean pFinished) {
+        this.finished = pFinished;
+    }
+
+    public boolean isSet1Running() {
+        return set1Running;
+    }
+
+    public void setSet1Running(boolean pInSet1) {
+        set1Running = pInSet1;
+    }
+
+    public boolean isSet1Finished() {
+        return set1Finished;
+    }
+
+    public void setSet1Finished(boolean pSet1Finished) {
+        set1Finished = pSet1Finished;
+    }
+
+    public boolean isSet2Running() {
+        return set2Running;
+    }
+
+    public void setSet2Running(boolean pInSet2) {
+        set2Running = pInSet2;
+    }
+
+    public boolean isSet2Finished() {
+        return set2Finished;
+    }
+
+    public void setSet2Finished(boolean pSet2Finished) {
+        set2Finished = pSet2Finished;
+    }
+
+    public boolean isSet3running() {
+        return set3running;
+    }
+
+    public void setSet3running(boolean pInSet3) {
+        set3running = pInSet3;
+    }
+
+    public boolean isSet3Finished() {
+        return set3Finished;
+    }
+
+    public void setSet3Finished(boolean pSet3Finished) {
+        set3Finished = pSet3Finished;
     }
 
     public DateTime getLocalDateTime() {
@@ -171,11 +241,11 @@ public class Match implements Parcelable {
         teamBFederationFlag = pTeamBFederationFlag;
     }
 
-    public int getCourt() {
+    public String getCourt() {
         return court;
     }
 
-    public void setCourt(int pCourt) {
+    public void setCourt(String pCourt) {
         court = pCourt;
     }
 
@@ -263,11 +333,19 @@ public class Match implements Parcelable {
         out.writeInt(noInTournament);
         out.writeString(roundName);
         out.writeInt(roundPhase);
-        out.writeInt(status);
+        out.writeByte((byte) (scheduled ? 1 : 0));
+        out.writeByte((byte) (running ? 1 : 0));
+        out.writeByte((byte) (finished ? 1 : 0));
+        out.writeByte((byte) (set1Running ? 1 : 0));
+        out.writeByte((byte) (set1Finished ? 1 : 0));
+        out.writeByte((byte) (set2Running ? 1 : 0));
+        out.writeByte((byte) (set2Finished ? 1 : 0));
+        out.writeByte((byte) (set3running ? 1 : 0));
+        out.writeByte((byte) (set3Finished ? 1 : 0));
         out.writeValue(localDateTime);
         out.writeString(teamAName);
         out.writeString(teamBName);
-        out.writeInt(court);
+        out.writeString(court);
         out.writeInt(pointsTeamASet1);
         out.writeInt(pointsTeamBSet1);
         out.writeInt(pointsTeamASet2);
@@ -295,11 +373,19 @@ public class Match implements Parcelable {
         noInTournament = in.readInt();
         roundName = in.readString();
         roundPhase = in.readInt();
-        status = in.readInt();
+        scheduled = in.readByte() != 0;
+        running = in.readByte() != 0;
+        finished = in.readByte() != 0;
+        set1Running = in.readByte() != 0;
+        set1Finished = in.readByte() != 0;
+        set2Running = in.readByte() != 0;
+        set2Finished = in.readByte() != 0;
+        set3running = in.readByte() != 0;
+        set3Finished = in.readByte() != 0;
         localDateTime = (DateTime) in.readValue(getClass().getClassLoader());
         teamAName = in.readString();
         teamBName = in.readString();
-        court = in.readInt();
+        court = in.readString();
         pointsTeamASet1 = in.readInt();
         pointsTeamBSet1 = in.readInt();
         pointsTeamASet2 = in.readInt();

@@ -199,6 +199,8 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                         if ("BeachTournament".equals(xpp.getName())) {
                             Event event = new Event();
                             long eventNo = -1;
+                            int currType = -1;
+                            int currStatus = -1;
                             for (int i = 0; i < xpp.getAttributeCount(); i++) {
                                 String attrName = xpp.getAttributeName(i);
                                 String attrValue = xpp.getAttributeValue(i);
@@ -209,13 +211,12 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 } else if ("Type".equals(attrName)) {
                                     if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                         int type = Integer.parseInt(attrValue);
-                                        event.setType(type);
-                                        setTournamentValue(event);
+                                        currType = type;
+                                        setTournamentValue(event, type);
                                     }
                                 } else if ("Status".equals(attrName)) {
                                     if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                        int status = Integer.parseInt(attrValue);
-                                        event.setStatus(status);
+                                        currStatus = Integer.parseInt(attrValue);
                                     }
                                 } else if ("Name".equals(attrName)) {
                                     event.setName(attrValue);
@@ -224,7 +225,7 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                                 }
                             }
 
-                            if (isEventQualified(event)) {
+                            if (isEventQualified(event, currType, currStatus)) {
                                 if (tourneyData.get(eventNo) == null) {
                                     processNameAndTitle(event);
                                     tourneyData.put(eventNo, event);
@@ -261,8 +262,6 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
                     mainEvent.setTimeZone(timeZone);
 
                     mainEvent.setTitle(tourneyEvent.getTitle());
-                    mainEvent.setType(tourneyEvent.getType());
-                    mainEvent.setStatus(tourneyEvent.getStatus());
                     mainEvent.setValue(tourneyEvent.getValue());
                     pEventList.set(i, mainEvent);
                 } else {
@@ -276,21 +275,18 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         }
     }
 
-    private void setTournamentValue(Event pEvent) {
-        int type = pEvent.getType();
-        if (type >= 38 && type <= 42) {
-            int value = -1 * (type - 42) + 1;
+    private void setTournamentValue(Event pEvent, int pType) {
+        if (pType >= 38 && pType <= 42) {
+            int value = -1 * (pType - 42) + 1;
             pEvent.setValue(value);
         }
     }
 
-    private boolean isEventQualified(Event pEvent) {
-        int status = pEvent.getStatus();
-        if (status != 1 && status != 6 && status != 7 && status != 8 && status != 9) {
+    private boolean isEventQualified(Event pEvent, int pType, int pStatus) {
+        if (pType == 35) {
             return false;
         }
-        int type = pEvent.getType();
-        if (type == 35) {
+        if (pStatus != 1 && pStatus != 6 && pStatus != 7 && pStatus != 8 && pStatus != 9) {
             return false;
         }
         String name = pEvent.getName();

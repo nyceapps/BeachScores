@@ -10,7 +10,6 @@ import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
 import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.util.FivbUtils;
-import com.nyceapps.beachscores.util.GeoUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
 
 import org.joda.time.DateTime;
@@ -120,7 +119,41 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                             } else if ("Status".equals(attrName)) {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
                                     int status = Integer.parseInt(attrValue);
-                                    match.setStatus(status);
+                                    if (status == 1) {
+                                        match.setScheduled(true);
+                                    } else if (status >= 2 && status <= 11) {
+                                        match.setRunning(true);
+                                    } else if (status >= 12) {
+                                        match.setFinished(true);
+                                    }
+                                    switch (status) {
+                                        case 3:
+                                            match.setSet1Running(true);
+                                            break;
+                                        case 4:
+                                            match.setSet1Finished(true);
+                                            break;
+                                        case 5:
+                                            match.setSet1Finished(true);
+                                            match.setSet2Running(true);
+                                            break;
+                                        case 6:
+                                            match.setSet1Finished(true);
+                                            match.setSet2Finished(true);
+                                            break;
+                                        case 7:
+                                            match.setSet1Finished(true);
+                                            match.setSet2Finished(true);
+                                            match.setSet3running(true);
+                                            break;
+                                        default:
+                                            if (status >= 8) {
+                                                match.setSet1Finished(true);
+                                                match.setSet2Finished(true);
+                                                match.setSet3Finished(true);
+                                            }
+                                            break;
+                                    }
                                 }
                             } else if ("LocalDate".equals(attrName)) {
                                 localDateStr = attrValue;
@@ -150,8 +183,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                                 match.setTeamBFederationFlag(federationDrawable);
                             } else if ("Court".equals(attrName)) {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int court = Integer.parseInt(attrValue);
-                                    match.setCourt(court);
+                                    match.setCourt(attrValue);
                                 }
                             } else if ("PointsTeamASet1".equals(attrName)) {
                                 if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
