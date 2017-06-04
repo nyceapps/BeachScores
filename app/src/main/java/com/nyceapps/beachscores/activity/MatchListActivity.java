@@ -36,7 +36,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private ProgressDialog progressDialog;
     private Spinner genderSpinner;
     private Spinner phaseSpinner;
-    private Spinner timeSpinner;
     private Timer updateTimer;
 
     @Override
@@ -151,25 +150,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
-
-        timeSpinner = (Spinner) findViewById(R.id.time_dropdown);
-
-        String[] timeItems = { "Local time", "My time" };
-        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, timeItems);
-        timeSpinner.setAdapter(timeAdapter);
-        timeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (!loading) {
-                    updateMatchList();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // TODO Auto-generated method stub
-            }
-        });
     }
 
     @Override
@@ -197,14 +177,9 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         if (matchMap != null) {
             int currGender = genderSpinner.getSelectedItemPosition();
             int currPhase = 4 - phaseSpinner.getSelectedItemPosition();
-            int currTime = timeSpinner.getSelectedItemPosition();
-            String currTimeDisplayType = TIME_DISPLAY_TYPE_LOCAL;
-            if (currTime == 1) {
-                currTimeDisplayType = TIME_DISPLAY_TYPE_MY;
-            }
 
             List<Match> matchList = matchMap.getList(currGender, currPhase);
-            matchListAdapter.updateList(matchList, currTimeDisplayType);
+            matchListAdapter.updateList(matchList, TIME_DISPLAY_TYPE_LOCAL);
 
             // TODO: cancel timer when all games are finished
         }

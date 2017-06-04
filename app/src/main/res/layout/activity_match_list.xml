@@ -14,19 +14,13 @@
             android:id="@+id/gender_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown" />
+            android:spinnerMode="dialog" />
 
         <Spinner
             android:id="@+id/phase_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown" />
-
-        <Spinner
-            android:id="@+id/time_dropdown"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dropdown" />
+            android:spinnerMode="dialog" />
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
