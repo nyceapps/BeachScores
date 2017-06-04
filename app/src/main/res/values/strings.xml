@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">BeachScores</string>
+
+    <string name="team_name_bye">bye</string>
+    <string name="team_name_tba">tba</string>
 </resources>

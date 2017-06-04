@@ -31,5 +31,7 @@ dependencies {
     compile 'com.truizlop.sectionedrecyclerview:library:1.2.0'
     // Joda Time
     compile 'joda-time:joda-time:2.9.4'
+    // VDT-XML
+    compile files('libs/vtd-xml_2_13_1.jar')
     testCompile 'junit:junit:4.12'
 }

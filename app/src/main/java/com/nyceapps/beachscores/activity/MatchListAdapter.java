@@ -112,34 +112,9 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
                 int pointsTeamBSet2 = match.getPointsTeamBSet2();
                 int pointsTeamBSet3 = match.getPointsTeamBSet3();
 
-                int teamASets = 0;
-                int teamBSets = 0;
-
                 StringBuilder setPointsSB = new StringBuilder();
-
-                if (match.isSet1Finished() && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
-                    if (pointsTeamASet1 > pointsTeamBSet1) {
-                        teamASets++;
-                    } else {
-                        teamBSets++;
-                    }
-                    if (match.isSet2Finished() && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
-                        if (pointsTeamASet2 > pointsTeamBSet2) {
-                            teamASets++;
-                        } else {
-                            teamBSets++;
-                        }
-                        if (match.isSet3Finished() && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
-                            if (pointsTeamASet3 > pointsTeamBSet3) {
-                                teamASets++;
-                            } else {
-                                teamBSets++;
-                            }
-                        }
-                    }
-                }
-                teamASetsStr = String.valueOf(teamASets);
-                teamBSetsStr = String.valueOf(teamBSets);
+                teamASetsStr = String.valueOf(match.getSetsTeamA());
+                teamBSetsStr = String.valueOf(match.getSetsTeamB());
                 if ((match.isSet1Running() || match.isSet1Finished()) && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
                     setPointsSB.append(pointsTeamASet1).append("-").append(pointsTeamBSet1);
                     if ((match.isSet2Running() || match.isSet2Finished()) && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {

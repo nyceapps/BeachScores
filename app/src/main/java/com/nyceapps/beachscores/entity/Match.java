@@ -258,6 +258,50 @@ public class Match implements Parcelable {
         court = pCourt;
     }
 
+    public int getSetsTeamA() {
+        int teamASets = 0;
+
+        if (isSet1Finished() && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+            if (pointsTeamASet1 > pointsTeamBSet1) {
+                teamASets++;
+            }
+            if (isSet2Finished() && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                if (pointsTeamASet2 > pointsTeamBSet2) {
+                    teamASets++;
+                }
+                if (isSet3Finished() && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                    if (pointsTeamASet3 > pointsTeamBSet3) {
+                        teamASets++;
+                    }
+                }
+            }
+        }
+
+        return teamASets;
+    }
+
+    public int getSetsTeamB() {
+        int teamBSets = 0;
+
+        if (isSet1Finished() && pointsTeamASet1 > -1 && pointsTeamBSet1 > -1) {
+            if (pointsTeamASet1 < pointsTeamBSet1) {
+                teamBSets++;
+            }
+            if (isSet2Finished() && pointsTeamASet2 > -1 && pointsTeamBSet2 > -1) {
+                if (pointsTeamASet2 < pointsTeamBSet2) {
+                    teamBSets++;
+                }
+                if (isSet3Finished() && pointsTeamASet3 > -1 && pointsTeamBSet3 > -1) {
+                    if (pointsTeamASet3 < pointsTeamBSet3) {
+                        teamBSets++;
+                    }
+                }
+            }
+        }
+
+        return teamBSets;
+    }
+
     public int getPointsTeamASet1() {
         return pointsTeamASet1;
     }

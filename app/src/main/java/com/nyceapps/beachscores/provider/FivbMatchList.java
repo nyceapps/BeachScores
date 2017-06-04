@@ -5,12 +5,22 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.entity.Match;
 import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.util.FivbUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
+import com.ximpleware.AutoPilot;
+import com.ximpleware.NavException;
+import com.ximpleware.ParseException;
+import com.ximpleware.PilotException;
+import com.ximpleware.VTDGen;
+import com.ximpleware.VTDNav;
+import com.ximpleware.XPathEvalException;
+import com.ximpleware.XPathParseException;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -31,6 +41,8 @@ import java.util.Map;
  */
 
 public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
+    private final static String TAG = FivbMatchList.class.getSimpleName();
+
     private Event event;
     private DateTimeZone eventTimeZone;
     private DateTimeFormatter eventDateFormatter;
@@ -38,10 +50,15 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     private MatchListResponse delegate;
     private final Context context;
     private Map<String, Drawable> fedFlagMap = new HashMap<>();
+    private String teamNameBye;
+    private String teamNameTba;
 
     public FivbMatchList(MatchListResponse pDelegate, Context pContext) {
         delegate = pDelegate;
         context = pContext;
+
+         teamNameBye = context.getString(R.string.team_name_bye);
+         teamNameTba = context.getString(R.string.team_name_tba);
     }
 
     @Override
@@ -71,219 +88,193 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
             return matchMap;
         }
 
-        int currGender = -1;
-        int currPhase = -1;
+        long womenTournamentNo = event.getWomenTournamentNo();
+        long menTournamentNo = event.getMenTournamentNo();
+
+        long parseStart = System.currentTimeMillis();
 
         try {
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XmlPullParser xpp = factory.newPullParser();
+            VTDGen vg = new VTDGen();
+            vg.setDoc(pResponse.getBytes());
+            vg.parse(true);
 
-            xpp.setInput(new StringReader(pResponse));
-            int eventType = xpp.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    if ("BeachMatches".equals(xpp.getName())) {
-                        currGender++;
-                    } else if ("BeachMatch".equals(xpp.getName())) {
-                        Match match = new Match();
+            VTDNav vn = vg.getNav();
+            AutoPilot ap = new AutoPilot(vn);
+            ap.selectXPath("/Responses/BeachMatches/BeachMatch");
 
-                        String localDateStr = null;
-                        String localTimeStr = null;
-                        for (int i = 0; i < xpp.getAttributeCount(); i++) {
-                            String attrName = xpp.getAttributeName(i);
-                            String attrValue = xpp.getAttributeValue(i);
-                            if ("No".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    long no = Long.parseLong(attrValue);
-                                    match.setNo(no);
-                                }
-                            } else if ("NoTournament".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    long tournamentNo = Long.parseLong(attrValue);
-                                    match.setTournamentNo(tournamentNo);
-                                }
-                            } else if ("NoInTournament".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int noInTournament = Integer.parseInt(attrValue);
-                                    match.setNoInTournament(noInTournament);
-                                }
-                            } else if ("RoundName".equals(attrName)) {
-                                match.setRoundName(attrValue);
-                            } else if ("RoundPhase".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int roundPhase = Integer.parseInt(attrValue);
-                                    match.setRoundPhase(roundPhase);
-                                    currPhase = roundPhase;
-                                }
-                            } else if ("Status".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int status = Integer.parseInt(attrValue);
-                                    if (status == 1) {
-                                        match.setScheduled(true);
-                                    } else if (status >= 2 && status <= 11) {
-                                        match.setRunning(true);
-                                    } else if (status >= 12) {
-                                        match.setFinished(true);
-                                    }
-                                    switch (status) {
-                                        case 3:
-                                            match.setSet1Running(true);
-                                            break;
-                                        case 4:
-                                            match.setSet1Finished(true);
-                                            break;
-                                        case 5:
-                                            match.setSet1Finished(true);
-                                            match.setSet2Running(true);
-                                            break;
-                                        case 6:
-                                            match.setSet1Finished(true);
-                                            match.setSet2Finished(true);
-                                            break;
-                                        case 7:
-                                            match.setSet1Finished(true);
-                                            match.setSet2Finished(true);
-                                            match.setSet3running(true);
-                                            break;
-                                        default:
-                                            if (status >= 8) {
-                                                match.setSet1Finished(true);
-                                                match.setSet2Finished(true);
-                                                match.setSet3Finished(true);
-                                            }
-                                            break;
-                                    }
-                                }
-                            } else if ("LocalDate".equals(attrName)) {
-                                localDateStr = attrValue;
-                            } else if ("LocalTime".equals(attrName)) {
-                                localTimeStr = attrValue;
-                            } else if ("NoTeamA".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue)) {
-                                    if (TextUtils.isDigitsOnly(attrValue)) {
-                                        long noTeamA = Long.parseLong(attrValue);
-                                        match.setNoTeamA(noTeamA);
-                                        if (noTeamA == 0) {
-                                            match.setTeamAName("TBA");
-                                        }
-                                    } else {
-                                        match.setBye(true);
-                                        match.setTeamAName("BYE");
-                                    }
-                                }
-                            } else if ("TeamAName".equals(attrName)) {
-                                if (TextUtils.isEmpty(match.getTeamAName())) {
-                                    match.setTeamAName(attrValue);
-                                }
-                            } else if ("TeamAFederationCode".equals(attrName)) {
-                                match.setTeamAFederationCode(attrValue);
-                                Drawable federationDrawable = getFederationDrawable(attrValue);
-                                match.setTeamAFederationFlag(federationDrawable);
-                            } else if ("NoTeamB".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue)) {
-                                    if (TextUtils.isDigitsOnly(attrValue)) {
-                                        long noTeamB = Long.parseLong(attrValue);
-                                        match.setNoTeamB(noTeamB);
-                                        if (noTeamB == 0) {
-                                            match.setTeamBName("TBA");
-                                        }
-                                    } else {
-                                        match.setBye(true);
-                                        match.setTeamBName("BYE");
-                                    }
-                                }
-                            } else if ("TeamBName".equals(attrName)) {
-                                if (TextUtils.isEmpty(match.getTeamBName())) {
-                                    match.setTeamBName(attrValue);
-                                }
-                            } else if ("TeamBFederationCode".equals(attrName)) {
-                                match.setTeamBFederationCode(attrValue);
-                                Drawable federationDrawable = getFederationDrawable(attrValue);
-                                match.setTeamBFederationFlag(federationDrawable);
-                            } else if ("Court".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    match.setCourt(attrValue);
-                                }
-                            } else if ("PointsTeamASet1".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamASet1(points);
-                                }
-                            } else if ("PointsTeamBSet1".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamBSet1(points);
-                                }
-                            } else if ("PointsTeamASet2".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamASet2(points);
-                                }
-                            } else if ("PointsTeamBSet2".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamBSet2(points);
-                                }
-                            } else if ("PointsTeamASet3".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamASet3(points);
-                                }
-                            } else if ("PointsTeamBSet3".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int points = Integer.parseInt(attrValue);
-                                    match.setPointsTeamBSet3(points);
-                                }
-                            } else if ("DurationSet1".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int duration = Integer.parseInt(attrValue);
-                                    match.setDurationSet1(duration);
-                                }
-                            } else if ("DurationSet2".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int duration = Integer.parseInt(attrValue);
-                                    match.setDurationSet2(duration);
-                                }
-                            } else if ("DurationSet3".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    int duration = Integer.parseInt(attrValue);
-                                    match.setDurationSet3(duration);
-                                }
-                            }
-                        }
-                        if (!TextUtils.isEmpty(localDateStr)) {
-                            String localDateTimeStr = localDateStr + " ";
-                            if (!TextUtils.isEmpty(localTimeStr)) {
-                                localDateTimeStr += localTimeStr;
-                            } else {
-                                localDateTimeStr += "00:00:00";
-                            }
+            int i = -1;
+            while ((i = ap.evalXPath()) != -1) {
+                Match match = new Match();
 
-                            DateTime localDateTime = DateTime.parse(localDateTimeStr, eventDateFormatter);
-                            DateTime myDateTime = null;
-                            if (eventTimeZone != null) {
-                                myDateTime = localDateTime.toDateTime(myTimeZone);
-                            }
-                            if (myDateTime != null) {
-                                match.setMyDateTime(null);
-                            }
-                            match.setLocalDateTime(localDateTime);
-                            match.setMyDateTime(myDateTime);
-                        }
+                long no = vn.parseLong(vn.getAttrVal("No"));
+                match.setNo(no);
 
-                        matchMap.put(currGender, currPhase, match);
-                    }
+                long tournamentNo = vn.parseLong(vn.getAttrVal("NoTournament"));
+                match.setTournamentNo(tournamentNo);
+
+                int noInTournament = vn.parseInt(vn.getAttrVal("NoInTournament"));
+                match.setNoInTournament(noInTournament);
+
+                String roundName = vn.toString(vn.getAttrVal("RoundName"));
+                match.setRoundName(roundName);
+
+                int roundPhase = vn.parseInt(vn.getAttrVal("RoundPhase"));
+                match.setRoundPhase(roundPhase);
+
+                int status = vn.parseInt(vn.getAttrVal("Status"));
+                if (status == 1) {
+                    match.setScheduled(true);
+                } else if (status >= 2 && status <= 11) {
+                    match.setRunning(true);
+                } else if (status >= 12) {
+                    match.setFinished(true);
                 }
-                eventType = xpp.next();
+                switch (status) {
+                    case 3:
+                        match.setSet1Running(true);
+                        break;
+                    case 4:
+                        match.setSet1Finished(true);
+                        break;
+                    case 5:
+                        match.setSet1Finished(true);
+                        match.setSet2Running(true);
+                        break;
+                    case 6:
+                        match.setSet1Finished(true);
+                        match.setSet2Finished(true);
+                        break;
+                    case 7:
+                        match.setSet1Finished(true);
+                        match.setSet2Finished(true);
+                        match.setSet3running(true);
+                        break;
+                    default:
+                        if (status >= 8) {
+                            match.setSet1Finished(true);
+                            match.setSet2Finished(true);
+                            match.setSet3Finished(true);
+                        }
+                        break;
+                }
+
+                String localDateStr = vn.toString(vn.getAttrVal("LocalDate"));
+                String localTimeStr = vn.toString(vn.getAttrVal("LocalTime"));
+                if (!TextUtils.isEmpty(localDateStr)) {
+                    String localDateTimeStr = localDateStr + " ";
+                    if (!TextUtils.isEmpty(localTimeStr)) {
+                        localDateTimeStr += localTimeStr;
+                    } else {
+                        localDateTimeStr += "00:00:00";
+                    }
+
+                    DateTime localDateTime = DateTime.parse(localDateTimeStr, eventDateFormatter);
+                    DateTime myDateTime = null;
+                    if (eventTimeZone != null) {
+                        myDateTime = localDateTime.toDateTime(myTimeZone);
+                    }
+                    if (myDateTime != null) {
+                        match.setMyDateTime(null);
+                    }
+                    match.setLocalDateTime(localDateTime);
+                    match.setMyDateTime(myDateTime);
+                }
+
+                long noTeamA = vn.parseLong(vn.getAttrVal("NoTeamA"));
+                match.setNoTeamA(noTeamA);
+                if (noTeamA == -1) {
+                    match.setBye(true);
+                    match.setTeamAName(teamNameBye);
+                } else  if (noTeamA == 0) {
+                    match.setTeamAName(teamNameTba);
+                } else {
+                    String teamAName = vn.toString(vn.getAttrVal("TeamAName"));
+                    match.setTeamAName(teamAName);
+                }
+                String teamAFederationCode = vn.toString(vn.getAttrVal("TeamAFederationCode"));
+                match.setTeamAFederationCode(teamAFederationCode);
+                Drawable federationADrawable = getFederationDrawable(teamAFederationCode);
+                match.setTeamAFederationFlag(federationADrawable);
+
+                long noTeamB = vn.parseLong(vn.getAttrVal("NoTeamB"));
+                match.setNoTeamB(noTeamB);
+                if (noTeamB == -1) {
+                    match.setBye(true);
+                    match.setTeamBName(teamNameBye);
+                } else  if (noTeamB == 0) {
+                    match.setTeamBName(teamNameTba);
+                } else {
+                    String teamBName = vn.toString(vn.getAttrVal("TeamBName"));
+                    match.setTeamBName(teamBName);
+                }
+                String teamBFederationCode = vn.toString(vn.getAttrVal("TeamBFederationCode"));
+                match.setTeamBFederationCode(teamBFederationCode);
+                Drawable federationBDrawable = getFederationDrawable(teamBFederationCode);
+                match.setTeamBFederationFlag(federationBDrawable);
+
+
+                String court = vn.toString(vn.getAttrVal("Court"));
+                match.setCourt(court);
+
+                int pointsTeamASet1 = parseInt(vn, "PointsTeamASet1");
+                match.setPointsTeamASet1(pointsTeamASet1);
+                int pointsTeamBSet1 = parseInt(vn, "PointsTeamBSet1");
+                match.setPointsTeamBSet1(pointsTeamBSet1);
+                int pointsTeamASet2 = parseInt(vn, "PointsTeamASet2");
+                match.setPointsTeamASet2(pointsTeamASet2);
+                int pointsTeamBSet2 = parseInt(vn, "PointsTeamBSet2");
+                match.setPointsTeamBSet2(pointsTeamBSet2);
+                int pointsTeamASet3 = parseInt(vn, "PointsTeamASet3");
+                match.setPointsTeamASet3(pointsTeamASet3);
+                int pointsTeamBSet3 = parseInt(vn, "PointsTeamBSet3");
+                match.setPointsTeamBSet3(pointsTeamBSet3);
+
+                int durationSet1 = parseInt(vn, "DurationSet1");
+                match.setDurationSet1(durationSet1);
+                int durationSet2 = parseInt(vn, "DurationSet2");
+                match.setDurationSet2(durationSet2);
+                int durationSet3 = parseInt(vn, "DurationSet3");
+                match.setDurationSet3(durationSet3);
+
+                int currGender = -1;
+                if (tournamentNo == womenTournamentNo) {
+                    currGender = 0;
+                } else if (tournamentNo == menTournamentNo) {
+                    currGender = 1;
+                }
+                matchMap.put(currGender, roundPhase, match);
             }
-        } catch (XmlPullParserException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (XPathParseException e) {
+            e.printStackTrace();
+        } catch (PilotException e) {
+            e.printStackTrace();
+        } catch (NavException e) {
+            e.printStackTrace();
+        } catch (XPathEvalException e) {
             e.printStackTrace();
         }
 
+        long parseTime = System.currentTimeMillis() - parseStart;
+        Log.i(TAG, String.format("parseTime = %d", parseTime));
+
         return matchMap;
+    }
+
+    private int parseInt(VTDNav pNav, String pName) {
+        int i = -1;
+
+        try {
+            String valStr = pNav.toString(pNav.getAttrVal(pName));
+            if (!TextUtils.isEmpty(valStr)) {
+                i = Integer.parseInt(valStr);
+            }
+        } catch (NavException e) {
+            e.printStackTrace();
+        }
+
+        return i;
     }
 
     private Drawable getFederationDrawable(String pFederationCode) {
