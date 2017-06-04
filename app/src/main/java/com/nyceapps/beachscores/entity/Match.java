@@ -14,6 +14,7 @@ public class Match implements Parcelable {
     private long no;
     private long tournamentNo;
     private int noInTournament;
+    private boolean bye = false;
     private String roundName;
     private int roundPhase = -1;
     private boolean scheduled = false;
@@ -71,6 +72,14 @@ public class Match implements Parcelable {
 
     public void setNoInTournament(int pNoInTournament) {
         noInTournament = pNoInTournament;
+    }
+
+    public boolean isBye() {
+        return bye;
+    }
+
+    public void setBye(boolean pBye) {
+        bye = pBye;
     }
 
     public String getRoundName() {
@@ -331,6 +340,7 @@ public class Match implements Parcelable {
         out.writeLong(no);
         out.writeLong(tournamentNo);
         out.writeInt(noInTournament);
+        out.writeByte((byte) (bye ? 1 : 0));
         out.writeString(roundName);
         out.writeInt(roundPhase);
         out.writeByte((byte) (scheduled ? 1 : 0));
@@ -371,6 +381,7 @@ public class Match implements Parcelable {
         no = in.readLong();
         tournamentNo = in.readLong();
         noInTournament = in.readInt();
+        bye = in.readByte() != 0;
         roundName = in.readString();
         roundPhase = in.readInt();
         scheduled = in.readByte() != 0;

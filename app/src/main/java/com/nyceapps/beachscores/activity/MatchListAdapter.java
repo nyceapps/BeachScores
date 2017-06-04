@@ -81,8 +81,6 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
         if (matchData != null) {
             Match match = matchData.get(position);
 
-            //int status = match.getStatus();
-
             int textColor = ContextCompat.getColor(context, R.color.colorDark);
             if (match.isFinished()) {
                 textColor = ContextCompat.getColor(context, R.color.colorLighter);
@@ -93,23 +91,11 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             long noTeamA = match.getNoTeamA();
             long noTeamB = match.getNoTeamB();
 
-            String teamAName = match.getTeamAName();
-            if (noTeamA == -1) {
-                teamAName = "BYE";
-            } else if (noTeamA == 0) {
-                teamAName = "TBA";
-            }
-            holder.teamAView.setText(teamAName);
+            holder.teamAView.setText(match.getTeamAName());
             holder.teamAView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamAFederationFlag(), null, null, null);
             holder.teamAView.setCompoundDrawablePadding(8);
             holder.teamAView.setTextColor(textColor);
-            String teamBName = match.getTeamBName();
-            if (noTeamB == -1) {
-                teamBName = "BYE";
-            } else if (noTeamB == 0) {
-                teamBName = "TBA";
-            }
-            holder.teamBView.setText(teamBName);
+            holder.teamBView.setText(match.getTeamBName());
             holder.teamBView.setCompoundDrawablesWithIntrinsicBounds(match.getTeamBFederationFlag(), null, null, null);
             holder.teamBView.setCompoundDrawablePadding(8);
             holder.teamBView.setTextColor(textColor);
@@ -118,7 +104,7 @@ class MatchListAdapter extends SectionedRecyclerViewAdapter<MatchListAdapter.Hea
             String teamBSetsStr = "";
             String setPointsStr = "";
 
-            if (noTeamA > -1 && noTeamB > -1) {
+            if (!match.isBye()) {
                 int pointsTeamASet1 = match.getPointsTeamASet1();
                 int pointsTeamASet2 = match.getPointsTeamASet2();
                 int pointsTeamASet3 = match.getPointsTeamASet3();

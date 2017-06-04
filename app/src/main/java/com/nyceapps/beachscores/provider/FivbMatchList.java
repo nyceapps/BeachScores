@@ -160,23 +160,43 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
                             } else if ("LocalTime".equals(attrName)) {
                                 localTimeStr = attrValue;
                             } else if ("NoTeamA".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    long noTeamA = Long.parseLong(attrValue);
-                                    match.setNoTeamA(noTeamA);
+                                if (!TextUtils.isEmpty(attrValue)) {
+                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                        long noTeamA = Long.parseLong(attrValue);
+                                        match.setNoTeamA(noTeamA);
+                                        if (noTeamA == 0) {
+                                            match.setTeamAName("TBA");
+                                        }
+                                    } else {
+                                        match.setBye(true);
+                                        match.setTeamAName("BYE");
+                                    }
                                 }
                             } else if ("TeamAName".equals(attrName)) {
-                                match.setTeamAName(attrValue);
+                                if (TextUtils.isEmpty(match.getTeamAName())) {
+                                    match.setTeamAName(attrValue);
+                                }
                             } else if ("TeamAFederationCode".equals(attrName)) {
                                 match.setTeamAFederationCode(attrValue);
                                 Drawable federationDrawable = getFederationDrawable(attrValue);
                                 match.setTeamAFederationFlag(federationDrawable);
                             } else if ("NoTeamB".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    long noTeamB = Long.parseLong(attrValue);
-                                    match.setNoTeamB(noTeamB);
+                                if (!TextUtils.isEmpty(attrValue)) {
+                                    if (TextUtils.isDigitsOnly(attrValue)) {
+                                        long noTeamB = Long.parseLong(attrValue);
+                                        match.setNoTeamB(noTeamB);
+                                        if (noTeamB == 0) {
+                                            match.setTeamBName("TBA");
+                                        }
+                                    } else {
+                                        match.setBye(true);
+                                        match.setTeamBName("BYE");
+                                    }
                                 }
                             } else if ("TeamBName".equals(attrName)) {
-                                match.setTeamBName(attrValue);
+                                if (TextUtils.isEmpty(match.getTeamBName())) {
+                                    match.setTeamBName(attrValue);
+                                }
                             } else if ("TeamBFederationCode".equals(attrName)) {
                                 match.setTeamBFederationCode(attrValue);
                                 Drawable federationDrawable = getFederationDrawable(attrValue);
@@ -267,26 +287,22 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
     }
 
     private Drawable getFederationDrawable(String pFederationCode) {
-        Drawable fedBitmap = null;
+        Drawable fedBitmap = fedFlagMap.get(pFederationCode);
 
-        if (!TextUtils.isEmpty(pFederationCode)) {
-            fedBitmap = fedFlagMap.get(pFederationCode);
-
-            if (fedBitmap == null) {
-                String flagUrl = FivbUtils.getFederationFlagUrl(pFederationCode);
-                if (!TextUtils.isEmpty(flagUrl)) {
-                    InputStream in = null;
-                    try {
-                        in = new java.net.URL(flagUrl).openStream();
-                        fedBitmap = new BitmapDrawable(context.getResources(), in);
-                        fedFlagMap.put(pFederationCode, fedBitmap);
-                    } catch (Exception e) {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException e1) {
-                                //
-                            }
+        if (fedBitmap == null) {
+            String flagUrl = FivbUtils.getFederationFlagUrl(pFederationCode);
+            if (!TextUtils.isEmpty(flagUrl)) {
+                InputStream in = null;
+                try {
+                    in = new java.net.URL(flagUrl).openStream();
+                    fedBitmap = new BitmapDrawable(context.getResources(), in);
+                    fedFlagMap.put(pFederationCode, fedBitmap);
+                } catch (Exception e) {
+                    if (in != null) {
+                        try {
+                            in.close();
+                        } catch (IOException e1) {
+                            //
                         }
                     }
                 }
