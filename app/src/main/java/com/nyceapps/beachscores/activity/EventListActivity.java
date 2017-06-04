@@ -3,8 +3,6 @@ package com.nyceapps.beachscores.activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +13,8 @@ import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
 import com.nyceapps.beachscores.provider.EventListResponse;
 import com.nyceapps.beachscores.provider.FivbEventList;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +54,8 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
             processEventList(eventList);
         } else {
             progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage("loading...");
+            progressDialog.setMessage("loading events...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.show();
 
             FivbEventList fivb = new FivbEventList(this, this);
@@ -89,6 +90,14 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
     }
 
     @Override
+    public void processEventProgress(int pEventCount, int pEventTotal) {
+        if (progressDialog != null) {
+            progressDialog.setProgress(pEventCount);
+            progressDialog.setMax(pEventTotal);
+        }
+    }
+
+    @Override
     public void processEventList(List<Event> pEventList) {
         eventList = pEventList;
 
@@ -106,15 +115,15 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
         // TODO: consider header in position count
         int nextEventPos =  0;
 
-        Date now = new Date();
+        DateTime now = new DateTime();
         for (int i = 0; i < pEventList.size(); i++) {
             Event event = pEventList.get(i);
-            Date startDate = event.getStartDate();
-            Date endDate = event.getEndDate();
-            if (now.before(startDate)) {
+            DateTime startDateTime = event.getStartDateTime();
+            DateTime endDateTime = event.getEndDateTime();
+            if (now.isBefore(startDateTime)) {
                 nextEventPos = i;
             }
-            if (now.after(startDate) && now.before(endDate)) {
+            if (now.isAfter(startDateTime) && now.isBefore(endDateTime)) {
                 nextEventPos = i;
                 break;
             }

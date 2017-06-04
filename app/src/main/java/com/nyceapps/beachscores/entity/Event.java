@@ -3,6 +3,7 @@ package com.nyceapps.beachscores.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.Date;
@@ -19,8 +20,8 @@ public class Event implements Parcelable {
     private DateTimeZone timeZone;
     private String name;
     private String title;
-    private Date startDate;
-    private Date endDate;
+    private DateTime startDateTime;
+    private DateTime endDateTime;
     private long womenTournamentNo = -1;
     private long menTournamentNo = -1;
     private int value = -1;
@@ -84,20 +85,20 @@ public class Event implements Parcelable {
         title = pTitle;
     }
 
-    public Date getStartDate() {
-        return startDate;
+    public DateTime getStartDateTime() {
+        return startDateTime;
     }
 
-    public void setStartDate(Date pStartDate) {
-        startDate = pStartDate;
+    public void setStartDateTime(DateTime pStartDateTime) {
+        startDateTime = pStartDateTime;
     }
 
-    public Date getEndDate() {
-        return endDate;
+    public DateTime getEndDateTime() {
+        return endDateTime;
     }
 
-    public void setEndDate(Date pEndDate) {
-        endDate = pEndDate;
+    public void setEndDateTime(DateTime pEndDateTime) {
+        endDateTime = pEndDateTime;
     }
 
     public long getWomenTournamentNo() {
@@ -146,8 +147,8 @@ public class Event implements Parcelable {
         out.writeValue(timeZone);
         out.writeString(name);
         out.writeString(title);
-        out.writeLong(startDate.getTime());
-        out.writeLong(endDate.getTime());
+        out.writeValue(startDateTime);
+        out.writeValue(endDateTime);
         out.writeLong(womenTournamentNo);
         out.writeLong(menTournamentNo);
     }
@@ -170,8 +171,8 @@ public class Event implements Parcelable {
         timeZone = (DateTimeZone) in.readValue(getClass().getClassLoader());
         name = in.readString();
         title = in.readString();
-        startDate = new Date(in.readLong());
-        endDate = new Date(in.readLong());
+        startDateTime = (DateTime) in.readValue(getClass().getClassLoader());
+        endDateTime = (DateTime) in.readValue(getClass().getClassLoader());
         womenTournamentNo = in.readLong();
         menTournamentNo = in.readLong();
     }

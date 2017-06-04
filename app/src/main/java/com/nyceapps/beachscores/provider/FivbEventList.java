@@ -9,22 +9,27 @@ import com.nyceapps.beachscores.util.FivbUtils;
 import com.nyceapps.beachscores.util.GeoUtils;
 import com.nyceapps.beachscores.util.PreferencesUtils;
 import com.nyceapps.beachscores.util.ServiceUtils;
+import com.ximpleware.AutoPilot;
+import com.ximpleware.NavException;
+import com.ximpleware.VTDGen;
+import com.ximpleware.VTDNav;
+import com.ximpleware.XPathEvalException;
+import com.ximpleware.XPathParseException;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +40,10 @@ import java.util.Set;
  * Created by lugosi on 21.05.17.
  */
 
-public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
+public class FivbEventList extends AsyncTask<Void, Integer, List<Event>> {
     private EventListResponse delegate;
     private final Context context;
+    private DateTimeFormatter eventDateFormatter;
 
     public FivbEventList(EventListResponse pDelegate, Context pContext) {
         delegate = pDelegate;
@@ -46,13 +52,15 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
     @Override
     protected List<Event> doInBackground(Void... params) {
+        eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+
         String response = ServiceUtils.getPostResponseString(FivbUtils.getRequestBaseUrl(), "Request", getBodyContent());
 
         List<Event> eventList = processXml(response);
         Collections.sort(eventList, new Comparator<Event>() {
             @Override
             public int compare(Event e0, Event e1) {
-                return e0.getStartDate().compareTo(e1.getStartDate());
+                return e0.getStartDateTime().compareTo(e1.getStartDateTime());
             }
         });
         return eventList;
@@ -65,62 +73,64 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
             return eventList;
         }
 
-        Set<String> tourneyNos = new HashSet<>();
+        Set<Long> tourneyNos = new HashSet<>();
 
         try {
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XmlPullParser xpp = factory.newPullParser();
+            VTDGen vg = new VTDGen();
+            vg.setDoc(pResponse.getBytes());
+            vg.parse(true);
 
-            xpp.setInput(new StringReader(pResponse));
-            int eventType = xpp.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    if ("Event".equals(xpp.getName())) {
-                        Event event = new Event();
-                        for (int i = 0; i < xpp.getAttributeCount(); i++) {
-                            String attrName = xpp.getAttributeName(i);
-                            String attrValue = xpp.getAttributeValue(i);
-                            if ("No".equals(attrName)) {
-                                if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                    long no = Long.parseLong(attrValue);
-                                    event.setNo(no);
-                                }
-                            } else if ("Code".equals(attrName)) {
-                                event.setCode(attrValue);
-                            } else if ("CountryCode".equals(attrName)) {
-                                event.setCountryCode(attrValue);
-                            } else if ("Name".equals(attrName)) {
-                                event.setName(attrValue);
-                            } else if ("StartDate".equals(attrName)) {
-                                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                                try {
-                                    Date start = df.parse(attrValue);
-                                    event.setStartDate(start);
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                            } else if ("EndDate".equals(attrName)) {
-                                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                                try {
-                                    Date end = df.parse(attrValue);
-                                    event.setEndDate(end);
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                            } else if ("Content".equals(attrName)) {
-                                processTournamentData(event, attrValue, tourneyNos);
-                            }
-                        }
+            VTDNav vn = vg.getNav();
+            AutoPilot ap = new AutoPilot(vn);
 
-                        eventList.add(event);
-                    }
-                }
-                eventType = xpp.next();
+            ap.selectXPath("/Responses/Events/@NbItems");
+            int eventTotal = (int) ap.evalXPathToNumber();
+            ap.resetXPath();
+
+            ap.selectXPath("/Responses/Events/Event");
+
+            int eventCount = 0;
+            publishProgress(eventCount, eventTotal);
+
+            int i = -1;
+            while ((i = ap.evalXPath()) != -1) {
+                Event event = new Event();
+
+                eventCount++;
+                publishProgress(eventCount, eventTotal);
+
+                long no = vn.parseLong(vn.getAttrVal("No"));
+                event.setNo(no);
+
+                String code = vn.toString(vn.getAttrVal("Code"));
+                event.setCode(code);
+
+                String countryCode = vn.toString(vn.getAttrVal("CountryCode"));
+                event.setCountryCode(countryCode);
+
+                String name = vn.toString(vn.getAttrVal("Name"));
+                event.setName(name);
+
+                String startDateTimeStr = vn.toString(vn.getAttrVal("StartDate"));
+                DateTime startDateTime = DateTime.parse(startDateTimeStr, eventDateFormatter);
+                event.setStartDateTime(startDateTime);
+
+                String endDateTimeStr = vn.toString(vn.getAttrVal("EndDate"));
+                DateTime endDateTime = DateTime.parse(endDateTimeStr, eventDateFormatter);
+                event.setEndDateTime(endDateTime);
+
+                String content = vn.toString(vn.getAttrVal("Content"));
+                processTournamentData(event, content, tourneyNos);
+
+                eventList.add(event);
             }
-        } catch (XmlPullParserException e) {
+        } catch (com.ximpleware.ParseException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (XPathParseException e) {
+            e.printStackTrace();
+        } catch (XPathEvalException e) {
+            e.printStackTrace();
+        } catch (NavException e) {
             e.printStackTrace();
         }
 
@@ -129,57 +139,49 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         return eventList;
     }
 
-    private void processTournamentData(Event pEvent, String pXml, Set<String> pTourneyNos) {
+    private void processTournamentData(Event pEvent, String pXml, Set<Long> pTourneyNos) {
         try {
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XmlPullParser xpp = factory.newPullParser();
+            VTDGen vg = new VTDGen();
+            vg.setDoc(pXml.getBytes());
+            vg.parse(true);
 
-            xpp.setInput(new StringReader(pXml));
-            int eventType = xpp.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    if ("BeachTournament".equals(xpp.getName())) {
-                        String key = null;
-                        String value = null;
-                        for (int i = 0; i < xpp.getAttributeCount(); i++) {
-                            String attrName = xpp.getAttributeName(i);
-                            String attrValue = xpp.getAttributeValue(i);
-                            if ("Gender".equals(attrName)) {
-                                key = attrValue;
-                            } else if ("No".equals(attrName)) {
-                                value = attrValue;
-                                pTourneyNos.add(attrValue);
-                            }
-                        }
-                        if (key != null && value != null) {
-                            if (!TextUtils.isEmpty(value) && TextUtils.isDigitsOnly(value)) {
-                                long genderNo = Long.parseLong(value);
-                                if ("W".equalsIgnoreCase(key)) {
-                                    pEvent.setWomenTournamentNo(genderNo);
-                                } else {
-                                    pEvent.setMenTournamentNo(genderNo);
-                                }
-                            }
-                        }
-                    }
+            VTDNav vn = vg.getNav();
+            AutoPilot ap = new AutoPilot(vn);
+
+            ap.selectXPath("/Event/BeachTournament");
+
+            int i = -1;
+            while ((i = ap.evalXPath()) != -1) {
+                String gender = vn.toString(vn.getAttrVal("Gender"));
+
+                long no = vn.parseLong(vn.getAttrVal("No"));
+
+                pTourneyNos.add(no);
+
+                if ("W".equalsIgnoreCase(gender)) {
+                    pEvent.setWomenTournamentNo(no);
+                } else {
+                    pEvent.setMenTournamentNo(no);
                 }
-                eventType = xpp.next();
             }
-        } catch (XmlPullParserException e) {
+        } catch (com.ximpleware.ParseException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (XPathParseException e) {
+            e.printStackTrace();
+        } catch (XPathEvalException e) {
+            e.printStackTrace();
+        } catch (NavException e) {
             e.printStackTrace();
         }
     }
 
-    private void processAdditionalTournamentData(List<Event> pEventList, Set<String> pTourneyNos) {
+    private void processAdditionalTournamentData(List<Event> pEventList, Set<Long> pTourneyNos) {
         if (pTourneyNos.size() > 0) {
             StringBuilder tourneyReqs = new StringBuilder();
             Map<String, String> reqVals = new HashMap<>();
             reqVals.put("Type", "GetBeachTournament");
             reqVals.put("Fields", "NoEvent Name Title Status Type");
-            for (String tourneyNo : pTourneyNos) {
+            for (long tourneyNo : pTourneyNos) {
                 reqVals.put("No", String.valueOf(tourneyNo));
                 tourneyReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
             }
@@ -188,56 +190,44 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
 
             Map<Long, Event> tourneyData = new HashMap<>();
             try {
-                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-                XmlPullParser xpp = factory.newPullParser();
+                VTDGen vg = new VTDGen();
+                vg.setDoc(response.getBytes());
+                vg.parse(true);
 
-                xpp.setInput(new StringReader(response));
-                int eventType = xpp.getEventType();
-                while (eventType != XmlPullParser.END_DOCUMENT) {
-                    if (eventType == XmlPullParser.START_TAG) {
-                        if ("BeachTournament".equals(xpp.getName())) {
-                            Event event = new Event();
-                            long eventNo = -1;
-                            int currType = -1;
-                            int currStatus = -1;
-                            for (int i = 0; i < xpp.getAttributeCount(); i++) {
-                                String attrName = xpp.getAttributeName(i);
-                                String attrValue = xpp.getAttributeValue(i);
-                                if ("NoEvent".equals(attrName)) {
-                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                        eventNo = Long.parseLong(attrValue);
-                                    }
-                                } else if ("Type".equals(attrName)) {
-                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                        int type = Integer.parseInt(attrValue);
-                                        currType = type;
-                                        setTournamentValue(event, type);
-                                    }
-                                } else if ("Status".equals(attrName)) {
-                                    if (!TextUtils.isEmpty(attrValue) && TextUtils.isDigitsOnly(attrValue)) {
-                                        currStatus = Integer.parseInt(attrValue);
-                                    }
-                                } else if ("Name".equals(attrName)) {
-                                    event.setName(attrValue);
-                                } else if ("Title".equals(attrName)) {
-                                    event.setTitle(attrValue);
-                                }
-                            }
+                VTDNav vn = vg.getNav();
+                AutoPilot ap = new AutoPilot(vn);
 
-                            if (isEventQualified(event, currType, currStatus)) {
-                                if (tourneyData.get(eventNo) == null) {
-                                    processNameAndTitle(event);
-                                    tourneyData.put(eventNo, event);
-                                }
-                            }
-                        }
+                ap.selectXPath("/Responses/BeachTournament");
+
+                int i = -1;
+                while ((i = ap.evalXPath()) != -1) {
+                    Event event = new Event();
+
+                    long noEvent = vn.parseLong(vn.getAttrVal("NoEvent"));
+
+                    int type =  vn.parseInt(vn.getAttrVal("Type"));
+                    setTournamentValue(event, type);
+
+                    int status = vn.parseInt(vn.getAttrVal("Status"));
+
+                    String name = vn.toString(vn.getAttrVal("Name"));
+                    event.setName(name);
+
+                    String title = vn.toString(vn.getAttrVal("Title"));
+                    event.setTitle(title);
+
+                    if (isEventQualified(event, type, status)) {
+                        processNameAndTitle(event);
+                        tourneyData.put(noEvent, event);
                     }
-                    eventType = xpp.next();
                 }
-            } catch (XmlPullParserException e) {
+            } catch (com.ximpleware.ParseException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (XPathParseException e) {
+                e.printStackTrace();
+            } catch (XPathEvalException e) {
+                e.printStackTrace();
+            } catch (NavException e) {
                 e.printStackTrace();
             }
 
@@ -309,6 +299,11 @@ public class FivbEventList extends AsyncTask<Void, Void, List<Event>> {
         String title = pEvent.getTitle();
         title = title.replaceAll("(?i)women's", "").replaceAll("(?i)men's", "").replaceAll(" {2,}", " ");
         pEvent.setTitle(title);
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        delegate.processEventProgress(values[0], values[1]);
     }
 
     @Override

@@ -15,6 +15,11 @@ import com.nyceapps.beachscores.R;
 import com.nyceapps.beachscores.entity.Event;
 import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeField;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,12 +87,12 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
             Event event = eventData.get(position);
             //Log.i("MAIN", event.getTitle() + "[" + event.getName() + "] = " + event.getValue());
 
-            Date now = new Date();
+            DateTime now = new DateTime();
 
             int textColor = ContextCompat.getColor(context, R.color.colorDark);
-            if (event.getEndDate().before(now)) {
+            if (event.getEndDateTime().isBefore(now)) {
                 textColor = ContextCompat.getColor(context, R.color.colorLighter);
-            } else if (event.getStartDate().after(now)) {
+            } else if (event.getStartDateTime().isAfter(now)) {
                 textColor = ContextCompat.getColor(context, R.color.colorDarker);
             }
 
@@ -95,12 +100,12 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
             Drawable drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_dark);
             Drawable drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_dark);
             Drawable drawableValue = ContextCompat.getDrawable(context, R.drawable.star_dark);
-            if (event.getEndDate().before(now)) {
+            if (event.getEndDateTime().isBefore(now)) {
                 drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_lighter);
                 drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_lighter);
                 drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_lighter);
                 drawableValue = ContextCompat.getDrawable(context, R.drawable.star_lighter);
-            } else if (event.getStartDate().after(now)) {
+            } else if (event.getStartDateTime().isAfter(now)) {
                 drawableMaleFemale = ContextCompat.getDrawable(context, R.drawable.gender_male_female_darker);
                 drawableFemale = ContextCompat.getDrawable(context, R.drawable.gender_female_darker);
                 drawableMale = ContextCompat.getDrawable(context, R.drawable.gender_male_darker);
@@ -143,16 +148,13 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
 
     @NonNull
     private String getFromToDateString(Event event) {
-        Calendar cal = Calendar.getInstance(Locale.getDefault());
-        cal.setTime(event.getStartDate());
-        int startMonth = cal.get(Calendar.MONTH);
-        cal.setTime(event.getEndDate());
-        int endMonth = cal.get(Calendar.MONTH);
+        int startMonth = event.getStartDateTime().getMonthOfYear();
+        int endMonth = event.getEndDateTime().getMonthOfYear();
 
-        DateFormat dfStart = (startMonth == endMonth ? new SimpleDateFormat("dd") : new SimpleDateFormat("dd MMMM"));
-        String startDateStr = dfStart.format(event.getStartDate());
-        DateFormat dfEnd = new SimpleDateFormat("dd MMMM");
-        String endDateStr = dfEnd.format(event.getEndDate());
+        DateTimeFormatter dtfStart = (startMonth == endMonth ? DateTimeFormat.forPattern("dd") : DateTimeFormat.forPattern("dd MMMM"));
+        String startDateStr = dtfStart.print(event.getStartDateTime());
+        DateTimeFormatter dtfEnd = DateTimeFormat.forPattern("dd MMMM");
+        String endDateStr = dtfEnd.print(event.getEndDateTime());
         return startDateStr + " - " + endDateStr;
     }
 
@@ -211,8 +213,9 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
         eventItems = new HashMap<>();
 
         for (Event event : pEventList) {
-            Date startDate = event.getStartDate();
-            String monthName = new SimpleDateFormat("MMMM").format(startDate);
+            DateTime startDateTime = event.getStartDateTime();
+            DateTimeFormatter dtfMonth = DateTimeFormat.forPattern("MMMM");
+            String monthName = dtfMonth.print(startDateTime);
             if (!eventSections.contains(monthName)) {
                 eventSections.add(monthName);
                 eventItems.put(monthName, new ArrayList<Event>());

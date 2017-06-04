@@ -9,5 +9,7 @@ import java.util.List;
  */
 
 public interface EventListResponse {
+    void processEventProgress(int pEventCount, int pEventTotal);
+
     void processEventList(List<Event> pEventList);
 }

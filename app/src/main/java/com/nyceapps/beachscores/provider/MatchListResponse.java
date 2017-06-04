@@ -11,5 +11,7 @@ import java.util.List;
  */
 
 public interface MatchListResponse {
+    void processMatchProgress(int pMatchCount, int pMatchTotal);
+
     void processMatchList(MatchMap pMatchMap);
 }

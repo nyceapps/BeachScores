@@ -26,13 +26,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +36,7 @@ import java.util.Map;
  * Created by lugosi on 21.05.17.
  */
 
-public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
+public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
     private final static String TAG = FivbMatchList.class.getSimpleName();
 
     private Event event;
@@ -70,7 +66,7 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         if (eventTimeZone != null) {
             eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(eventTimeZone);
         } else {
-            eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(eventTimeZone);
+            eventDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
         }
         myTimeZone = DateTimeZone.getDefault();
 
@@ -91,6 +87,8 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         long womenTournamentNo = event.getWomenTournamentNo();
         long menTournamentNo = event.getMenTournamentNo();
 
+        int matchTotal = 0;
+
         long parseStart = System.currentTimeMillis();
 
         try {
@@ -100,11 +98,25 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
 
             VTDNav vn = vg.getNav();
             AutoPilot ap = new AutoPilot(vn);
+
+            ap.selectXPath("/Responses/BeachMatches[1]/@NbItems");
+            matchTotal += (int) ap.evalXPathToNumber();
+            ap.resetXPath();
+            ap.selectXPath("/Responses/BeachMatches[2]/@NbItems");
+            matchTotal += (int) ap.evalXPathToNumber();
+            ap.resetXPath();
+
             ap.selectXPath("/Responses/BeachMatches/BeachMatch");
+
+            int matchCount = 0;
+            publishProgress(matchCount, matchTotal);
 
             int i = -1;
             while ((i = ap.evalXPath()) != -1) {
                 Match match = new Match();
+
+                matchCount++;
+                publishProgress(matchCount, matchTotal);
 
                 long no = vn.parseLong(vn.getAttrVal("No"));
                 match.setNo(no);
@@ -301,6 +313,11 @@ public class FivbMatchList extends AsyncTask<Event, Void, MatchMap> {
         }
 
         return fedBitmap;
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        delegate.processMatchProgress(values[0], values[1]);
     }
 
     @Override

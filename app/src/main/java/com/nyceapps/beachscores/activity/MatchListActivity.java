@@ -69,7 +69,8 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         loading = true;
 
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("loading...");
+        progressDialog.setMessage("loading matches...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.show();
     }
 
@@ -169,6 +170,14 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
+    }
+
+    @Override
+    public void processMatchProgress(int pMatchCount, int pMatchTotal) {
+        if (progressDialog != null) {
+            progressDialog.setProgress(pMatchCount);
+            progressDialog.setMax(pMatchTotal);
+        }
     }
 
     @Override
