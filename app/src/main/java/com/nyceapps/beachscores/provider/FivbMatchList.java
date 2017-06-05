@@ -29,7 +29,9 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,6 +50,7 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
     private Map<String, Drawable> fedFlagMap = new HashMap<>();
     private String teamNameBye;
     private String teamNameTba;
+    private List<Integer> existingRounds = new ArrayList<>();
 
     public FivbMatchList(MatchListResponse pDelegate, Context pContext) {
         delegate = pDelegate;
@@ -82,10 +85,18 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
             matchMap.addGender(1, context.getString(R.string.gender_men));
         }
 
-        matchMap.addRound(4, context.getString(R.string.round_name_main_draw));
-        matchMap.addRound(3, context.getString(R.string.round_name_qualification));
-        matchMap.addRound(2, context.getString(R.string.round_name_federation_quota));
-        matchMap.addRound(1, context.getString(R.string.round_name_confederation_quota));
+        if (existingRounds.contains(4)) {
+            matchMap.addRound(4, context.getString(R.string.round_name_main_draw));
+        }
+        if (existingRounds.contains(3)) {
+            matchMap.addRound(3, context.getString(R.string.round_name_qualification));
+        }
+        if (existingRounds.contains(2)) {
+            matchMap.addRound(2, context.getString(R.string.round_name_federation_quota));
+        }
+        if (existingRounds.contains(1)) {
+            matchMap.addRound(1, context.getString(R.string.round_name_confederation_quota));
+        }
 
         return matchMap;
     }
@@ -142,6 +153,7 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
 
                 int roundPhase = vn.parseInt(vn.getAttrVal("RoundPhase"));
                 match.setRoundPhase(roundPhase);
+                existingRounds.add(roundPhase);
                 String roundName = vn.toString(vn.getAttrVal("RoundName"));
                 match.setRoundName(roundName);
 

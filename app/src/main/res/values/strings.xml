@@ -8,7 +8,7 @@
     <string name="gender_men">Men\'s</string>
 
     <string name="round_name_confederation_quota">Confederation quota</string>
-    <string name="round_name_federation_quota">Federation quota</string>
-    <string name="round_name_qualification">Qualification</string>
+    <string name="round_name_federation_quota">Country quota</string>
+    <string name="round_name_qualification">Qualifications</string>
     <string name="round_name_main_draw">Main draw</string>
 </resources>

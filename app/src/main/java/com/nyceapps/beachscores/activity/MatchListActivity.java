@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +21,9 @@ import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.provider.FivbMatchList;
 import com.nyceapps.beachscores.provider.MatchListResponse;
 
+import org.joda.time.DateTime;
+import org.joda.time.DurationFieldType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -27,6 +31,8 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 
 public class MatchListActivity extends AppCompatActivity implements ActivityDelegate, MatchListResponse {
+    private final static String TAG = MatchListActivity.class.getSimpleName();
+
     public final static String TIME_DISPLAY_TYPE_LOCAL = "LOCAL";
     public final static String TIME_DISPLAY_TYPE_MY = "MY";
 
@@ -89,20 +95,30 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     }
 
     private void setupUpdateTask() {
-        final Handler handler = new Handler();
-        updateTimer = new Timer();
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this);
-                        fivb.execute(event);
-                    }
-                });
-            }
-        };
-        updateTimer.schedule(task, 0, 30 * 1000);
+        DateTime now = new DateTime();
+        if (event.getEndDateTime().isBeforeNow()) {
+            Log.i(TAG, "Updating once...");
+            FivbMatchList fivb = new FivbMatchList(this, this);
+            fivb.execute(event);
+        } else if (event.getStartDateTime().isBeforeNow() && event.getEndDateTime().withFieldAdded(DurationFieldType.years(), 1).isAfterNow()) {
+            final Handler handler = new Handler();
+            updateTimer = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            Log.i(TAG, "Updating...");
+                            FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this);
+                            fivb.execute(event);
+                        }
+                    });
+                }
+            };
+            updateTimer.schedule(task, 0, 30 * 1000);
+        } else {
+            // TODO: "no data" alert
+        }
     }
 
     @Override
@@ -179,8 +195,10 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private int getCurrentGender() {
         if (genderSpinner != null) {
             int pos = genderSpinner.getSelectedItemPosition();
-            int gender = matchMap.getGenderList().get(pos);
-            return gender;
+            if (pos > -1) {
+                int gender = matchMap.getGenderList().get(pos);
+                return gender;
+            }
         }
 
         return -1;
@@ -189,8 +207,10 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private int getCurrentRound() {
         if (roundSpinner != null) {
             int pos = roundSpinner.getSelectedItemPosition();
-            int round = matchMap.getRoundList().get(pos);
-            return round;
+            if (pos > -1) {
+                int round = matchMap.getRoundList().get(pos);
+                return round;
+            }
         }
 
         return -1;
@@ -201,10 +221,10 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             int currGender = getCurrentGender();
             int currRound = getCurrentRound();
 
-            List<Match> matchList = matchMap.getList(currGender, currRound);
-            matchListAdapter.updateList(matchList, TIME_DISPLAY_TYPE_LOCAL);
-
-            // TODO: cancel timer when all games are finished
+            if (currGender > -1 && currRound > -1) {
+                List<Match> matchList = matchMap.getList(currGender, currRound);
+                matchListAdapter.updateList(matchList, TIME_DISPLAY_TYPE_LOCAL);
+            }
         }
     }
 
