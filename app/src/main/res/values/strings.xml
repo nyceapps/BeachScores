@@ -3,4 +3,12 @@
 
     <string name="team_name_bye">bye</string>
     <string name="team_name_tba">tba</string>
+
+    <string name="gender_women">Women\'s</string>
+    <string name="gender_men">Men\'s</string>
+
+    <string name="round_name_confederation_quota">Confederation quota</string>
+    <string name="round_name_federation_quota">Federation quota</string>
+    <string name="round_name_qualification">Qualification</string>
+    <string name="round_name_main_draw">Main draw</string>
 </resources>

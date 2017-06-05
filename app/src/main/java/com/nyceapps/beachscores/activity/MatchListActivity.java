@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 public class MatchListActivity extends AppCompatActivity implements ActivityDelegate, MatchListResponse {
     public final static String TIME_DISPLAY_TYPE_LOCAL = "LOCAL";
@@ -35,7 +36,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private boolean loading = false;
     private ProgressDialog progressDialog;
     private Spinner genderSpinner;
-    private Spinner phaseSpinner;
+    private Spinner roundSpinner;
     private Timer updateTimer;
 
     @Override
@@ -62,8 +63,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         List<Match> dummyMatchList = new ArrayList<>();
         matchListAdapter = new MatchListAdapter(dummyMatchList, this, this);
         matchListView.setAdapter(matchListAdapter);
-
-        initializeDropdowns();
 
         loading = true;
 
@@ -106,16 +105,37 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         updateTimer.schedule(task, 0, 30 * 1000);
     }
 
+    @Override
+    public void processMatchProgress(int pMatchCount, int pMatchTotal) {
+        if (progressDialog != null) {
+            progressDialog.setProgress(pMatchCount);
+            progressDialog.setMax(pMatchTotal);
+        }
+    }
+
+    @Override
+    public void processMatchList(MatchMap pMatchMap) {
+        matchMap = pMatchMap;
+
+        initializeDropdowns();
+
+        updateMatchList();
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+
+        loading = false;
+    }
+
     private void initializeDropdowns() {
         genderSpinner = (Spinner) findViewById(R.id.gender_dropdown);
 
         List<String> genderItems = new ArrayList<>();
-        if (event.hasWomenTournament()) {
-            genderItems.add("Women's");
+        for (int gender : matchMap.getGenderList()) {
+            genderItems.add(matchMap.getGenderName(gender));
         }
-        if (event.hasMenTournament()) {
-            genderItems.add("Men's");
-        }
+
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, genderItems);
         genderSpinner.setAdapter(genderAdapter);
         genderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -132,12 +152,16 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             }
         });
 
-        phaseSpinner = (Spinner) findViewById(R.id.phase_dropdown);
+        roundSpinner = (Spinner) findViewById(R.id.round_dropdown);
 
-        String[] phaseItems = { "Main draw", "Qualification", "Country quota" };
-        ArrayAdapter<String> phaseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, phaseItems);
-        phaseSpinner.setAdapter(phaseAdapter);
-        phaseSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        List<String> roundItems = new ArrayList<>();
+        for (Integer round : matchMap.getRoundList()) {
+            roundItems.add(matchMap.getRoundName(round));
+        }
+
+        ArrayAdapter<String> roundAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, roundItems);
+        roundSpinner.setAdapter(roundAdapter);
+        roundSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (!loading) {
@@ -152,33 +176,32 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         });
     }
 
-    @Override
-    public void processMatchProgress(int pMatchCount, int pMatchTotal) {
-        if (progressDialog != null) {
-            progressDialog.setProgress(pMatchCount);
-            progressDialog.setMax(pMatchTotal);
+    private int getCurrentGender() {
+        if (genderSpinner != null) {
+            int pos = genderSpinner.getSelectedItemPosition();
+            int gender = matchMap.getGenderList().get(pos);
+            return gender;
         }
+
+        return -1;
     }
 
-    @Override
-    public void processMatchList(MatchMap pMatchMap) {
-        matchMap = pMatchMap;
-
-        updateMatchList();
-
-        if (progressDialog != null) {
-            progressDialog.dismiss();
+    private int getCurrentRound() {
+        if (roundSpinner != null) {
+            int pos = roundSpinner.getSelectedItemPosition();
+            int round = matchMap.getRoundList().get(pos);
+            return round;
         }
 
-        loading = false;
+        return -1;
     }
 
     private void updateMatchList() {
         if (matchMap != null) {
-            int currGender = genderSpinner.getSelectedItemPosition();
-            int currPhase = 4 - phaseSpinner.getSelectedItemPosition();
+            int currGender = getCurrentGender();
+            int currRound = getCurrentRound();
 
-            List<Match> matchList = matchMap.getList(currGender, currPhase);
+            List<Match> matchList = matchMap.getList(currGender, currRound);
             matchListAdapter.updateList(matchList, TIME_DISPLAY_TYPE_LOCAL);
 
             // TODO: cancel timer when all games are finished

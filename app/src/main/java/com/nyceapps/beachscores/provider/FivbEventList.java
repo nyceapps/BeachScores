@@ -20,12 +20,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -63,6 +58,7 @@ public class FivbEventList extends AsyncTask<Void, Integer, List<Event>> {
                 return e0.getStartDateTime().compareTo(e1.getStartDateTime());
             }
         });
+
         return eventList;
     }
 

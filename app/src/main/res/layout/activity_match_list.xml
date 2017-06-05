@@ -17,7 +17,7 @@
             android:spinnerMode="dialog" />
 
         <Spinner
-            android:id="@+id/phase_dropdown"
+            android:id="@+id/round_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:spinnerMode="dialog" />

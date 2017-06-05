@@ -53,8 +53,8 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
         delegate = pDelegate;
         context = pContext;
 
-         teamNameBye = context.getString(R.string.team_name_bye);
-         teamNameTba = context.getString(R.string.team_name_tba);
+        teamNameBye = context.getString(R.string.team_name_bye);
+        teamNameTba = context.getString(R.string.team_name_tba);
     }
 
     @Override
@@ -74,6 +74,19 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
 
         MatchMap matchMap = processXml(response);
         matchMap.sort();
+
+        if (event.hasWomenTournament()) {
+            matchMap.addGender(0, context.getString(R.string.gender_women));
+        }
+        if (event.hasMenTournament()) {
+            matchMap.addGender(1, context.getString(R.string.gender_men));
+        }
+
+        matchMap.addRound(4, context.getString(R.string.round_name_main_draw));
+        matchMap.addRound(3, context.getString(R.string.round_name_qualification));
+        matchMap.addRound(2, context.getString(R.string.round_name_federation_quota));
+        matchMap.addRound(1, context.getString(R.string.round_name_confederation_quota));
+
         return matchMap;
     }
 
@@ -89,9 +102,9 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
 
         int matchTotal = 0;
 
-        long parseStart = System.currentTimeMillis();
-
         try {
+            long parseStart = System.currentTimeMillis();
+
             VTDGen vg = new VTDGen();
             vg.setDoc(pResponse.getBytes());
             vg.parse(true);
@@ -127,11 +140,10 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
                 int noInTournament = vn.parseInt(vn.getAttrVal("NoInTournament"));
                 match.setNoInTournament(noInTournament);
 
-                String roundName = vn.toString(vn.getAttrVal("RoundName"));
-                match.setRoundName(roundName);
-
                 int roundPhase = vn.parseInt(vn.getAttrVal("RoundPhase"));
                 match.setRoundPhase(roundPhase);
+                String roundName = vn.toString(vn.getAttrVal("RoundName"));
+                match.setRoundName(roundName);
 
                 int status = vn.parseInt(vn.getAttrVal("Status"));
                 if (status == 1) {
@@ -254,8 +266,12 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
                 } else if (tournamentNo == menTournamentNo) {
                     currGender = 1;
                 }
+
                 matchMap.put(currGender, roundPhase, match);
             }
+
+            long parseTime = System.currentTimeMillis() - parseStart;
+            Log.i(TAG, String.format("parseTime = %d", parseTime));
         } catch (ParseException e) {
             e.printStackTrace();
         } catch (XPathParseException e) {
@@ -267,9 +283,6 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
         } catch (XPathEvalException e) {
             e.printStackTrace();
         }
-
-        long parseTime = System.currentTimeMillis() - parseStart;
-        Log.i(TAG, String.format("parseTime = %d", parseTime));
 
         return matchMap;
     }
