@@ -12,11 +12,75 @@ import java.util.Map;
  */
 
 public class MatchMap {
+    private final boolean firstLoad;
+    private boolean womenScheduled = false;
+    private boolean womenRunning = false;
+    private boolean womenFinished = false;
+    private boolean menScheduled = false;
+    private boolean menRunning = false;
+    private boolean menFinished = false;
+
     private Map<Integer, Map<Integer, List<Match>>> matchMap = new HashMap<>();
     private List<Integer> genderList = new ArrayList<>();
     private Map<Integer, String> genderMap = new HashMap<>();
     private List<Integer> roundList = new ArrayList<>();
     private Map<Integer, String> roundMap = new HashMap<>();
+
+    public MatchMap(boolean pFirstLoad) {
+        firstLoad = pFirstLoad;
+    }
+
+    public boolean isFirstLoad() {
+        return firstLoad;
+    }
+
+    public boolean isWomenScheduled() {
+        return womenScheduled;
+    }
+
+    public void setWomenScheduled(boolean pWomenScheduled) {
+        womenScheduled = pWomenScheduled;
+    }
+
+    public boolean isWomenRunning() {
+        return womenRunning;
+    }
+
+    public void setWomenRunning(boolean pWomenRunning) {
+        womenRunning = pWomenRunning;
+    }
+
+    public boolean isWomenFinished() {
+        return womenFinished;
+    }
+
+    public void setWomenFinished(boolean pWomenFinished) {
+        womenFinished = pWomenFinished;
+    }
+
+    public boolean isMenScheduled() {
+        return menScheduled;
+    }
+
+    public void setMenScheduled(boolean pMenScheduled) {
+        menScheduled = pMenScheduled;
+    }
+
+    public boolean isMenRunning() {
+        return menRunning;
+    }
+
+    public void setMenRunning(boolean pMenRunning) {
+        menRunning = pMenRunning;
+    }
+
+    public boolean isMenFinished() {
+        return menFinished;
+    }
+
+    public void setMenFinished(boolean pMenFinished) {
+        menFinished = pMenFinished;
+    }
 
     public void put(int pGender, int pRound, Match pMatch) {
         Map<Integer, List<Match>> gMap = matchMap.get(pGender);

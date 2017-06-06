@@ -21,18 +21,15 @@ import com.nyceapps.beachscores.entity.MatchMap;
 import com.nyceapps.beachscores.provider.FivbMatchList;
 import com.nyceapps.beachscores.provider.MatchListResponse;
 
-import org.joda.time.DateTime;
-import org.joda.time.DurationFieldType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
 
 public class MatchListActivity extends AppCompatActivity implements ActivityDelegate, MatchListResponse {
     private final static String TAG = MatchListActivity.class.getSimpleName();
 
+    private final static int UPDATE_INTERVAL = 30 * 1000;
     public final static String TIME_DISPLAY_TYPE_LOCAL = "LOCAL";
     public final static String TIME_DISPLAY_TYPE_MY = "MY";
 
@@ -41,8 +38,10 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private MatchListAdapter matchListAdapter;
     private boolean loading = false;
     private ProgressDialog progressDialog;
+    private RecyclerView matchListView;
     private Spinner genderSpinner;
     private Spinner roundSpinner;
+    private View tournamentNotStartedMessage;
     private Timer updateTimer;
 
     @Override
@@ -56,7 +55,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         String title = event.getTitle();
         setTitle(title);
 
-        RecyclerView matchListView = (RecyclerView) findViewById(R.id.match_list_view);
+        matchListView = (RecyclerView) findViewById(R.id.match_list_view);
 
         matchListView.setHasFixedSize(true);
 
@@ -66,23 +65,21 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(matchListView.getContext(), matchListLayoutManager.getOrientation());
         matchListView.addItemDecoration(dividerItemDecoration);
 
+        genderSpinner = (Spinner) findViewById(R.id.gender_dropdown);
+        roundSpinner = (Spinner) findViewById(R.id.round_dropdown);
+
+        tournamentNotStartedMessage = findViewById(R.id.tournament_not_started_message);
+
         List<Match> dummyMatchList = new ArrayList<>();
         matchListAdapter = new MatchListAdapter(dummyMatchList, this, this);
         matchListView.setAdapter(matchListAdapter);
-
-        loading = true;
-
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("loading matches...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        setupUpdateTask();
+        loadMatches();
     }
 
     @Override
@@ -94,31 +91,19 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         }
     }
 
-    private void setupUpdateTask() {
-        DateTime now = new DateTime();
-        if (event.getEndDateTime().isBeforeNow()) {
-            Log.i(TAG, "Updating once...");
-            FivbMatchList fivb = new FivbMatchList(this, this);
-            fivb.execute(event);
-        } else if (event.getStartDateTime().isBeforeNow() && event.getEndDateTime().withFieldAdded(DurationFieldType.years(), 1).isAfterNow()) {
-            final Handler handler = new Handler();
-            updateTimer = new Timer();
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            Log.i(TAG, "Updating...");
-                            FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this);
-                            fivb.execute(event);
-                        }
-                    });
-                }
-            };
-            updateTimer.schedule(task, 0, 30 * 1000);
-        } else {
-            // TODO: "no data" alert
-        }
+    private void loadMatches() {
+        Log.i(TAG, "Loading...");
+        loading = true;
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("loading matches...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setProgress(0);
+        progressDialog.setMax(0);
+        progressDialog.show();
+
+        FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this, true);
+        fivb.execute(event);
     }
 
     @Override
@@ -133,7 +118,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     public void processMatchList(MatchMap pMatchMap) {
         matchMap = pMatchMap;
 
-        initializeDropdowns();
+        initializeView();
 
         updateMatchList();
 
@@ -142,10 +127,46 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         }
 
         loading = false;
+
+        if (matchMap.isFirstLoad()) {
+            if (matchMap.isWomenRunning() || matchMap.isMenRunning()) {
+                setupUpdateTask();
+            }
+        }
     }
 
-    private void initializeDropdowns() {
-        genderSpinner = (Spinner) findViewById(R.id.gender_dropdown);
+    private void setupUpdateTask() {
+        final Handler handler = new Handler();
+        updateTimer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        Log.i(TAG, "Updating...");
+                        loading = true;
+
+                        FivbMatchList fivb = new FivbMatchList(MatchListActivity.this, MatchListActivity.this, false);
+                        fivb.execute(event);
+                    }
+                });
+            }
+        };
+        updateTimer.schedule(task, UPDATE_INTERVAL, UPDATE_INTERVAL);
+    }
+
+    private void initializeView() {
+        if (matchMap.isWomenRunning() || matchMap.isMenRunning() || matchMap.isWomenFinished() ||matchMap.isMenFinished()) {
+            matchListView.setVisibility(View.VISIBLE);
+            genderSpinner.setVisibility(View.VISIBLE);
+            roundSpinner.setVisibility(View.VISIBLE);
+            tournamentNotStartedMessage.setVisibility(View.INVISIBLE);
+        } else {
+            matchListView.setVisibility(View.INVISIBLE);
+            genderSpinner.setVisibility(View.INVISIBLE);
+            roundSpinner.setVisibility(View.INVISIBLE);
+            tournamentNotStartedMessage.setVisibility(View.VISIBLE);
+        }
 
         List<String> genderItems = new ArrayList<>();
         for (int gender : matchMap.getGenderList()) {
@@ -167,8 +188,6 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
-
-        roundSpinner = (Spinner) findViewById(R.id.round_dropdown);
 
         List<String> roundItems = new ArrayList<>();
         for (Integer round : matchMap.getRoundList()) {

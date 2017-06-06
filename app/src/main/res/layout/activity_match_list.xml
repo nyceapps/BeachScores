@@ -14,13 +14,15 @@
             android:id="@+id/gender_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:spinnerMode="dialog" />
+            android:spinnerMode="dialog"
+            android:visibility="invisible" />
 
         <Spinner
             android:id="@+id/round_dropdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:spinnerMode="dialog" />
+            android:spinnerMode="dialog"
+            android:visibility="invisible" />
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
@@ -28,4 +30,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@+id/tournament_not_started_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tournament_not_started"
+        android:gravity="center"
+        android:visibility="invisible" />
 </LinearLayout>

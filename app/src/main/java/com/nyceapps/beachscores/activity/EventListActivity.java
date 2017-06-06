@@ -56,6 +56,8 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
             progressDialog = new ProgressDialog(this);
             progressDialog.setMessage("loading events...");
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setProgress(0);
+            progressDialog.setMax(0);
             progressDialog.show();
 
             FivbEventList fivb = new FivbEventList(this, this);

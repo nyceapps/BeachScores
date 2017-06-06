@@ -41,20 +41,23 @@ import java.util.Map;
 public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
     private final static String TAG = FivbMatchList.class.getSimpleName();
 
+    private MatchListResponse delegate;
+    private final Context context;
+    private final boolean firstLoad;
+
     private Event event;
     private DateTimeZone eventTimeZone;
     private DateTimeFormatter eventDateFormatter;
     private DateTimeZone myTimeZone;
-    private MatchListResponse delegate;
-    private final Context context;
     private Map<String, Drawable> fedFlagMap = new HashMap<>();
     private String teamNameBye;
     private String teamNameTba;
     private List<Integer> existingRounds = new ArrayList<>();
 
-    public FivbMatchList(MatchListResponse pDelegate, Context pContext) {
+    public FivbMatchList(MatchListResponse pDelegate, Context pContext, boolean pFirstLoad) {
         delegate = pDelegate;
         context = pContext;
+        firstLoad = pFirstLoad;
 
         teamNameBye = context.getString(R.string.team_name_bye);
         teamNameTba = context.getString(R.string.team_name_tba);
@@ -102,7 +105,7 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
     }
 
     private MatchMap processXml(String pResponse) {
-        MatchMap matchMap = new MatchMap();
+        MatchMap matchMap = new MatchMap(firstLoad);
 
         if (TextUtils.isEmpty(pResponse)) {
             return matchMap;
@@ -122,6 +125,33 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
 
             VTDNav vn = vg.getNav();
             AutoPilot ap = new AutoPilot(vn);
+
+            if (event.hasWomenTournament()) {
+                ap.selectXPath("/Responses/BeachTournament[@No=\"" + event.getWomenTournamentNo() + "\"]/@Status");
+                int womenStatus = (int) ap.evalXPathToNumber();
+                ap.resetXPath();
+
+                if (womenStatus < 6) {
+                    matchMap.setWomenScheduled(true);
+                } else if (womenStatus == 6) {
+                    matchMap.setWomenRunning(true);
+                } else {
+                    matchMap.setWomenFinished(true);
+                }
+            }
+            if (event.hasMenTournament()) {
+                ap.selectXPath("/Responses/BeachTournament[@No=\"" + event.getMenTournamentNo() + "\"]/@Status");
+                int menStatus = (int) ap.evalXPathToNumber();
+                ap.resetXPath();
+
+                if (menStatus < 6) {
+                    matchMap.setMenScheduled(true);
+                } else if (menStatus == 6) {
+                    matchMap.setMenRunning(true);
+                } else {
+                    matchMap.setMenFinished(true);
+                }
+            }
 
             ap.selectXPath("/Responses/BeachMatches[1]/@NbItems");
             matchTotal += (int) ap.evalXPathToNumber();
@@ -353,6 +383,17 @@ public class FivbMatchList extends AsyncTask<Event, Integer, MatchMap> {
     private String getBodyContent() {
         StringBuilder matchListReqs = new StringBuilder();
         Map<String, String> reqVals = new HashMap<>();
+        reqVals.put("Type", "GetBeachTournament");
+        reqVals.put("Fields", "No Status");
+        if (event.hasWomenTournament()) {
+            reqVals.put("No", String.valueOf(event.getWomenTournamentNo()));
+            matchListReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
+        }
+        if (event.hasMenTournament()) {
+            reqVals.put("No", String.valueOf(event.getMenTournamentNo()));
+            matchListReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
+        }
+        reqVals = new HashMap<>();
         reqVals.put("Type", "GetBeachMatchList");
         reqVals.put("Fields", "No NoTournament NoInTournament RoundName RoundPhase Status LocalDate LocalTime NoTeamA TeamAName TeamAFederationCode NoTeamB TeamBName TeamBFederationCode Court PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3");
         Map<String, String> filtVals = new HashMap<>();

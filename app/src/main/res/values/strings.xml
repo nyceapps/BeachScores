@@ -11,4 +11,6 @@
     <string name="round_name_federation_quota">Country quota</string>
     <string name="round_name_qualification">Qualifications</string>
     <string name="round_name_main_draw">Main draw</string>
+
+    <string name="tournament_not_started">This tournament has not started yet.</string>
 </resources>
