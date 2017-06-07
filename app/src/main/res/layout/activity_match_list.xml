@@ -36,6 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/tournament_not_started"
+        android:textAppearance="?android:attr/textAppearanceSmall"
         android:gravity="center"
         android:visibility="invisible" />
 </LinearLayout>
