@@ -173,7 +173,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             genderItems.add(matchMap.getGenderName(gender));
         }
 
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, genderItems);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, R.layout.spinner_row, genderItems);
         genderSpinner.setAdapter(genderAdapter);
         genderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -194,7 +194,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
             roundItems.add(matchMap.getRoundName(round));
         }
 
-        ArrayAdapter<String> roundAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, roundItems);
+        ArrayAdapter<String> roundAdapter = new ArrayAdapter<>(this, R.layout.spinner_row, roundItems);
         roundSpinner.setAdapter(roundAdapter);
         roundSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
