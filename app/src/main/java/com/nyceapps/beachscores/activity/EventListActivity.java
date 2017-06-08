@@ -110,25 +110,28 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
         }
 
         int nextEventPos = getNextEventPosition(eventList);
-        eventListLayoutManager.scrollToPositionWithOffset(nextEventPos, 0 );
+        eventListLayoutManager.scrollToPositionWithOffset(nextEventPos, 0);
     }
 
     private int getNextEventPosition(List<Event> pEventList) {
-        // TODO: consider header in position count
         int nextEventPos =  0;
 
-        DateTime now = new DateTime();
         for (int i = 0; i < pEventList.size(); i++) {
             Event event = pEventList.get(i);
             DateTime startDateTime = event.getStartDateTime();
             DateTime endDateTime = event.getEndDateTime();
-            if (now.isBefore(startDateTime)) {
+            if (startDateTime.isAfterNow() && nextEventPos == 0) {
                 nextEventPos = i;
             }
-            if (now.isAfter(startDateTime) && now.isBefore(endDateTime)) {
+            if (startDateTime.isBeforeNow() && endDateTime.isAfterNow()) {
                 nextEventPos = i;
                 break;
             }
+        }
+
+        // TODO: consider header in position count
+        if (nextEventPos > 0) {
+
         }
 
         return nextEventPos;
