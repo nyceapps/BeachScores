@@ -16,18 +16,12 @@ import com.nyceapps.beachscores.entity.Event;
 import com.truizlop.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeField;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -40,11 +34,14 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
     private final Context context;
     private List<String> eventSections;
     private Map<String, List<Event>> eventItems;
+    private final DateTimeFormatter dtfMonth;
 
     public EventListAdapter(List<Event> pEventList, ActivityDelegate pDelegate, Context pContext) {
         eventList = pEventList;
         delegate = pDelegate;
         context = pContext;
+
+        dtfMonth = DateTimeFormat.forPattern("MMMM");
     }
 
     @Override
@@ -214,7 +211,6 @@ class EventListAdapter extends SectionedRecyclerViewAdapter<EventListAdapter.Hea
 
         for (Event event : pEventList) {
             DateTime startDateTime = event.getStartDateTime();
-            DateTimeFormatter dtfMonth = DateTimeFormat.forPattern("MMMM");
             String monthName = dtfMonth.print(startDateTime);
             if (!eventSections.contains(monthName)) {
                 eventSections.add(monthName);

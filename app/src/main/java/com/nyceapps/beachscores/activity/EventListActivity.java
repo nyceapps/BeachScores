@@ -129,10 +129,18 @@ public class EventListActivity extends AppCompatActivity implements ActivityDele
             }
         }
 
-        // TODO: consider header in position count
-        if (nextEventPos > 0) {
-
+        int headerCount = 0;
+        int lastMonth = -1;
+        for (int i = 0; i < nextEventPos; i++) {
+            Event event = pEventList.get(i);
+            DateTime startDateTime = event.getStartDateTime();
+            if (startDateTime.getMonthOfYear() != lastMonth) {
+                headerCount++;
+                lastMonth = startDateTime.getMonthOfYear();
+            }
         }
+
+        nextEventPos += headerCount;
 
         return nextEventPos;
     }
