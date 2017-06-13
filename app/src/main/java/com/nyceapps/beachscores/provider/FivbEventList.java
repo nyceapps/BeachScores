@@ -176,7 +176,7 @@ public class FivbEventList extends AsyncTask<Void, Integer, List<Event>> {
             StringBuilder tourneyReqs = new StringBuilder();
             Map<String, String> reqVals = new HashMap<>();
             reqVals.put("Type", "GetBeachTournament");
-            reqVals.put("Fields", "NoEvent Name Title Status Type");
+            reqVals.put("Fields", "NoEvent Name Title Status Type StartDateMainDraw EndDateMainDraw StartDateQualification EndDateQualification");
             for (long tourneyNo : pTourneyNos) {
                 reqVals.put("No", String.valueOf(tourneyNo));
                 tourneyReqs.append(FivbUtils.getSingleRequestString(reqVals, null));
@@ -211,6 +211,26 @@ public class FivbEventList extends AsyncTask<Void, Integer, List<Event>> {
 
                     String title = vn.toString(vn.getAttrVal("Title"));
                     event.setTitle(title);
+
+                    // TODO: Respect different dates for women and men?, What about country quota?
+                    String startDateMainDraw = vn.toString(vn.getAttrVal("StartDateMainDraw"));
+                    String startDateQualification = vn.toString(vn.getAttrVal("StartDateQualification"));
+                    String startDateTimeStr = startDateQualification;
+                    if (TextUtils.isEmpty(startDateTimeStr) || startDateMainDraw.compareTo(startDateQualification) < 0) {
+                        startDateTimeStr = startDateMainDraw;
+                    }
+                    DateTime startDateTime = DateTime.parse(startDateTimeStr, eventDateFormatter);
+                    event.setStartDateTime(startDateTime);
+
+                    String endDateMainDraw = vn.toString(vn.getAttrVal("EndDateMainDraw"));
+                    String endDateQualification = vn.toString(vn.getAttrVal("EndDateQualification"));
+                    String endDateTimeStr = endDateQualification;
+                    if (TextUtils.isEmpty(endDateTimeStr) || endDateMainDraw.compareTo(endDateQualification) > 0) {
+                        endDateTimeStr = endDateMainDraw;
+                    }
+                    DateTime endDateTime = DateTime.parse(endDateTimeStr, eventDateFormatter);
+                    event.setEndDateTime(endDateTime);
+
 
                     if (isEventQualified(event, type, status)) {
                         processNameAndTitle(event);
@@ -249,6 +269,12 @@ public class FivbEventList extends AsyncTask<Void, Integer, List<Event>> {
 
                     mainEvent.setTitle(tourneyEvent.getTitle());
                     mainEvent.setValue(tourneyEvent.getValue());
+                    if (tourneyEvent.getStartDateTime().isBefore(mainEvent.getStartDateTime())) {
+                        mainEvent.setStartDateTime(tourneyEvent.getStartDateTime());
+                    }
+                    if (tourneyEvent.getEndDateTime().isAfter(mainEvent.getEndDateTime())) {
+                        mainEvent.setEndDateTime(tourneyEvent.getEndDateTime());
+                    }
                     pEventList.set(i, mainEvent);
                 } else {
                     pEventList.remove(i);

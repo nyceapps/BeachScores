@@ -40,7 +40,9 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     private ProgressDialog progressDialog;
     private RecyclerView matchListView;
     private Spinner genderSpinner;
+    private int genderSelectedItemPosition = -1;
     private Spinner roundSpinner;
+    private int roundSelectedItemPosition = -1;
     private View tournamentNotStartedMessage;
     private Timer updateTimer;
 
@@ -118,7 +120,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
     public void processMatchList(MatchMap pMatchMap) {
         matchMap = pMatchMap;
 
-        initializeView();
+        initializeViews();
 
         updateMatchList();
 
@@ -155,7 +157,7 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
         updateTimer.schedule(task, UPDATE_INTERVAL, UPDATE_INTERVAL);
     }
 
-    private void initializeView() {
+    private void initializeViews() {
         if (matchMap.isWomenRunning() || matchMap.isMenRunning() || matchMap.isWomenFinished() ||matchMap.isMenFinished()) {
             matchListView.setVisibility(View.VISIBLE);
             genderSpinner.setVisibility(View.VISIBLE);
@@ -188,6 +190,9 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
+        if (genderSelectedItemPosition > -1) {
+            genderSpinner.setSelection(genderSelectedItemPosition);
+        }
 
         List<String> roundItems = new ArrayList<>();
         for (Integer round : matchMap.getRoundList()) {
@@ -209,13 +214,18 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
                 // TODO Auto-generated method stub
             }
         });
+        if (roundSelectedItemPosition > -1) {
+            roundSpinner.setSelection(roundSelectedItemPosition);
+        }
     }
 
     private int getCurrentGender() {
         if (genderSpinner != null) {
-            int pos = genderSpinner.getSelectedItemPosition();
-            if (pos > -1) {
-                int gender = matchMap.getGenderList().get(pos);
+            genderSelectedItemPosition = genderSpinner.getSelectedItemPosition();
+            if (genderSelectedItemPosition > -1) {
+                // TODO: Request did not succeed (e. g. server not reachable) -> IndexOutOfBounds
+                List<Integer> genderList = matchMap.getGenderList();
+                int gender = genderList.get(genderSelectedItemPosition);
                 return gender;
             }
         }
@@ -225,9 +235,11 @@ public class MatchListActivity extends AppCompatActivity implements ActivityDele
 
     private int getCurrentRound() {
         if (roundSpinner != null) {
-            int pos = roundSpinner.getSelectedItemPosition();
-            if (pos > -1) {
-                int round = matchMap.getRoundList().get(pos);
+            roundSelectedItemPosition = roundSpinner.getSelectedItemPosition();
+            if (roundSelectedItemPosition > -1) {
+                // TODO: Request did not succeed (e. g. server not reachable) -> IndexOutOfBounds
+                List<Integer> roundList = matchMap.getRoundList();
+                int round = roundList.get(roundSelectedItemPosition);
                 return round;
             }
         }
